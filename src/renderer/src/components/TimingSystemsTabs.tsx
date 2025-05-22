@@ -28,7 +28,7 @@ export const TimingSystemTabs = ({ appState, logLines }: TimingSystemTabsProps) 
         <>
           Please contact us if you are using a RaceTec System and want to pend some effort to develop this feature.
           <p>
-            EMail:<a mailto="info@racemap.com">info@racemap.com</a>
+            EMail:<a href="mailto:info@racemap.com">info@racemap.com</a>
           </p>
         </>
       ),
