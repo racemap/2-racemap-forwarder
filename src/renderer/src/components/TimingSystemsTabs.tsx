@@ -2,6 +2,7 @@ import { Tabs, type TabsProps } from 'antd';
 import type { ServerState } from '../../../types';
 import { MyLapsForwarderDetails } from './MyLapsForwarderDetails';
 import styled from 'styled-components';
+import { ChronoTrackForwarderDetails } from './ChronoTrackForwarderDetails';
 
 type TimingSystemTabsProps = {
   appState: ServerState;
@@ -12,18 +13,25 @@ export const TimingSystemTabs = ({ appState, logLines }: TimingSystemTabsProps) 
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: 'From MyLaps',
+      label: `From MyLaps ${appState.myLapsForwarder.forwardedReads > 0 ? `(${appState.myLapsForwarder.forwardedReads})` : ''}`,
       children: <MyLapsForwarderDetails forwarderState={appState.myLapsForwarder} />,
     },
     {
       key: '2',
-      label: 'From ChronoTrack',
-      children: 'Content of Tab Pane 2',
+      label: `From ChronoTrack ${appState.chronoTrackForwarder.forwardedReads > 0 ? `(${appState.chronoTrackForwarder.forwardedReads})` : ''}`,
+      children: <ChronoTrackForwarderDetails forwarderState={appState.chronoTrackForwarder} />,
     },
     {
       key: '3',
       label: 'From RaceTec',
-      children: 'Content of Tab Pane 3',
+      children: (
+        <>
+          Please contact us if you are using a RaceTec System and want to pend some effort to develop this feature.
+          <p>
+            EMail:<a mailto="info@racemap.com">info@racemap.com</a>
+          </p>
+        </>
+      ),
     },
     {
       key: '4',

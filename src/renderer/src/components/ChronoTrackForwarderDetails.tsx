@@ -1,12 +1,12 @@
 import styled from 'styled-components';
 import { Table, Tag } from 'antd';
-import type { MyLapsForwarderState } from 'src/main/mylaps/types';
+import type { ChronoTrackForwarderState } from 'src/main/chronoTrack/types';
 
-type MyLapsForwarderDetailsProps = {
-  forwarderState: MyLapsForwarderState;
+type ChronoTrackForwarderDetailsProps = {
+  forwarderState: ChronoTrackForwarderState;
 };
 
-export const MyLapsForwarderDetails = ({ forwarderState }: MyLapsForwarderDetailsProps) => {
+export const ChronoTrackForwarderDetails = ({ forwarderState }: ChronoTrackForwarderDetailsProps) => {
   const columns = [
     {
       title: '#',
@@ -54,18 +54,14 @@ export const MyLapsForwarderDetails = ({ forwarderState }: MyLapsForwarderDetail
     sourceIP: connection.sourceIP,
     sourcePort: connection.sourcePort,
     forwardedReads: connection.forwardedReads,
-    locations: connection.locations
-      .map((l) => {
-        return l.name;
-      })
-      .join(', '),
+    locations: connection.locations.join(', '),
   }));
 
   return (
     <DetailsContainer>
       <span>
         {`The table list all connection from any software connected to Port ${forwarderState.listenPort}.
-				To forward reads from MyLaps connect the exporter and forward all
+				To forward reads from ChronoTrack connect the exporter and forward all
 				reads.`}
       </span>
       <Table dataSource={data} columns={columns} />

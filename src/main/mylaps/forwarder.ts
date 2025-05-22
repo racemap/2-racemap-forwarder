@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import net from 'node:net';
 import shortId from 'shortid';
+import BaseForwarder from '../base-forwarder';
 import type APIClient from '../api-client';
-import { BaseClass } from '../base-class';
 import { updateServerState } from '../state';
 import type { TimingRead, MessageParts, LocationUpdate } from '../../types';
 import type { MyLapsDevice, MyLapsExtendedSocket, MyLapsForwarderState, MyLapsLocation } from './types';
@@ -15,6 +15,7 @@ import {
   MyLaps2RMServiceName,
   MyLapsFrameTerminator,
   MAX_MESSAGE_DATA_DELAY_IN_MS,
+  s,
 } from './consts';
 
 const logToFileSystem = (message: Buffer | string, fromClient = true) => {
@@ -27,20 +28,12 @@ const clearIntervalTimer = (timerHandle: NodeJS.Timeout | null) => {
   }
 };
 
-class MyLapsForwarder extends BaseClass {
-  _connections: Map<string, MyLapsExtendedSocket> = new Map();
+class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
   _server: net.Server;
-  _listenHost: string;
-  _listenPort: number;
-  _forwardedReads = 0;
-  _apiClient: APIClient;
 
   constructor(apiClient: APIClient, listenPort: number, justLocalHost = true) {
-    super();
+    super(apiClient, listenPort, justLocalHost);
 
-    this._apiClient = apiClient;
-    this._listenPort = listenPort;
-    this._listenHost = justLocalHost ? '127.0.0.1' : '0.0.0.0';
     this._server = this._configureReceiverSocket(this._listenPort, this._listenHost);
 
     this.updateElectronState();
@@ -53,6 +46,7 @@ class MyLapsForwarder extends BaseClass {
       sourceIP: socket.remoteAddress ?? '',
       sourcePort: socket.remotePort ?? -1,
       openedAt: socket.openedAt,
+      closedAt: socket.closedAt,
       forwardedReads: socket.forwardedReads,
       identified: socket.identified,
       locations: Object.values(socket.meta.locations),
@@ -91,12 +85,24 @@ class MyLapsForwarder extends BaseClass {
     return server;
   };
 
+  _markDisconnected = (socketId: string): void => {
+    const socket = this._connections.get(socketId);
+    if (socket != null) {
+      log(`${this.className}._markDisconnected`, socket.id);
+      socket.closedAt = new Date();
+      socket.identified = false;
+      socket.userId = '';
+      socket.cache.buffer = Buffer.alloc(0);
+    }
+  };
+
   _onNewConnection = (socket: MyLapsExtendedSocket): void => {
     log(`${this.className}Socket.onNewConnection`);
 
     socket.id = shortId.generate();
     socket.userId = '';
     socket.openedAt = new Date();
+    socket.closedAt = null;
     socket.identified = false;
     socket.cache = {
       lastTime: Date.now(),
@@ -135,7 +141,7 @@ class MyLapsForwarder extends BaseClass {
       log(`${this.className}Socket.onEnd`);
       clearIntervalTimer(socket.keepAliveTimerHandle);
       clearIntervalTimer(socket.triggerStartTransmissionHandle);
-      this._connections.delete(socket.id);
+      this._markDisconnected(socket.id);
       this.updateElectronState();
     });
 

@@ -1,6 +1,4 @@
-import type net from 'node:net';
-import type ChronoTrackForwarder from './forwarder';
-import type { ExtendedSocket, StoredTimingRead } from '../../types';
+import type { ExtendedSocket } from '../../types';
 
 type ChronoTrackEvent = {
   id: string;
@@ -28,7 +26,7 @@ export type ChronoTrackClientMetadata = {
 export type ChronoTrackDevice = {
   id: string;
   meta: ChronoTrackClientMetadata;
-  openedAt: string;
+  openedAt: Date;
 };
 
 export type TPredictionTestTimes = {
@@ -62,6 +60,7 @@ export type ChronoTrackForwarderState = {
     id: string;
     userId: string;
     openedAt: Date;
+    closedAt: Date | null;
     sourceIP: string;
     sourcePort: number;
     forwardedReads: number;

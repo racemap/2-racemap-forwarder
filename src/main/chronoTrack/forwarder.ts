@@ -5,7 +5,7 @@ import moment from 'moment';
 import shortId from 'shortid';
 import type APIClient from '../api-client';
 import type { TimingRead } from '../../types';
-import { BaseClass } from '../base-class';
+import BaseForwarder from '../base-forwarder';
 import { updateServerState } from '../state';
 import { error, info, log, processStoredData, storeIncomingRawData, success, warn } from '../functions';
 import {
@@ -35,21 +35,12 @@ const clearIntervalTimer = (timerHandle: NodeJS.Timeout | null) => {
   }
 };
 
-class ChronoTrackForwarder extends BaseClass {
-  _connections: Map<string, ChronoTrackExtendedSocket> = new Map();
+class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
   _server: net.Server;
-  _listenHost: string;
-  _listenPort: number;
-  _forwardedReads = 0;
-
-  _apiClient: APIClient;
 
   constructor(apiClient: APIClient, listenPort: number, justLocalHost = true) {
-    super();
+    super(apiClient, listenPort, justLocalHost);
 
-    this._apiClient = apiClient;
-    this._listenPort = listenPort;
-    this._listenHost = justLocalHost ? '127.0.0.1' : '0.0.0.0';
     this._server = this._configureReceiverSocket(this._listenPort, this._listenHost);
 
     this.updateElectronState();
@@ -62,6 +53,7 @@ class ChronoTrackForwarder extends BaseClass {
       sourceIP: socket.remoteAddress ?? '',
       sourcePort: socket.remotePort ?? -1,
       openedAt: socket.openedAt,
+      closedAt: socket.closedAt,
       forwardedReads: socket.forwardedReads,
       identified: socket.identified,
       locations: Object.values(socket.meta.locations),
@@ -98,12 +90,24 @@ class ChronoTrackForwarder extends BaseClass {
     return server;
   };
 
+  _markDisconnected = (socketId: string): void => {
+    const socket = this._connections.get(socketId);
+    if (socket != null) {
+      log(`${this.className}._markDisconnected`, socket.id);
+      socket.closedAt = new Date();
+      socket.identified = false;
+      socket.userId = '';
+      socket.cache.buffer = Buffer.alloc(0);
+    }
+  };
+
   _onNewConnection = (socket: ChronoTrackExtendedSocket): void => {
     log(`${this.className}Socket.onNewConnection`);
 
     socket.id = shortId.generate();
     socket.userId = '';
     socket.openedAt = new Date();
+    socket.closedAt = null;
     socket.identified = false;
     socket.cache = {
       lastTime: Date.now(),
@@ -126,6 +130,8 @@ class ChronoTrackForwarder extends BaseClass {
 
     this._connections.set(socket.id, socket); // The server knows its sockets
 
+    this.updateElectronState();
+
     socket.on('error', (error: Error) => {
       if (error != null) {
         log(`${this.className}Socket.onError: ${error} ${error.stack}`);
@@ -135,11 +141,13 @@ class ChronoTrackForwarder extends BaseClass {
       }
     });
 
+    // Scope is ChronoTrackForwarder
     socket.on('end', () => {
       log(`${this.className}Socket.onEnd`);
       clearIntervalTimer(socket.keepAliveTimerHandle);
       clearIntervalTimer(socket.triggerStartTransmissionHandle);
-      this._connections.delete(socket.id);
+      this._markDisconnected(socket.id);
+      this.updateElectronState();
     });
 
     socket.on('data', (data: Buffer) => {

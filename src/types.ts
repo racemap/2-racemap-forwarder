@@ -81,6 +81,7 @@ export type ExtendedSocket = net.Socket & {
   cache: { lastTime: number; buffer: Buffer; name: string };
   userId: string;
   openedAt: Date;
+  closedAt: Date | null;
   identified: boolean;
   keepAliveTimerHandle: NodeJS.Timeout | null;
   triggerStartTransmissionHandle: NodeJS.Timeout | null;

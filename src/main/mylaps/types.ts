@@ -31,6 +31,7 @@ export type MyLapsForwarderState = {
     id: string;
     userId: string;
     openedAt: Date;
+    closedAt: Date | null;
     sourceIP: string;
     sourcePort: number;
     forwardedReads: number;
