@@ -15,7 +15,6 @@ import {
   MyLaps2RMServiceName,
   MyLapsFrameTerminator,
   MAX_MESSAGE_DATA_DELAY_IN_MS,
-  s,
 } from './consts';
 
 const logToFileSystem = (message: Buffer | string, fromClient = true) => {
@@ -443,8 +442,8 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
                   }
                 }
               }
+              warn(`We received ${markers.length} Markers. But do not know what to do with them. So we drop them. Possible guntime!`);
               // we always answer with the counter
-              warn(`We received ${markers.length} Markers. But do not know what to do with them. So we drop them`);
               refToSocket.sendData([MyLaps2RMServiceName, MyLapsFunctions.AckMarker, counter.toString()]);
             }
 

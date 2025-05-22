@@ -283,10 +283,10 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
     const saveRead = (someParts: Array<string>) => {
       let chipId = someParts[3];
 
-      // All ChronoTrack Transponder IDs are prefixed with ChronoPing_
+      // All ChronoTrack Transponder IDs are prefixed with Chrono_
       // This is to seperate them from Raceresult TransponderIds and common App Ids
-      if (chipId.indexOf('ChronoPing_') !== 0) {
-        chipId = `ChronoPing_${chipId}`;
+      if (chipId.indexOf('Chrono_') !== 0) {
+        chipId = `Chrono_${chipId}`;
       }
 
       const timingRead: TimingRead = {
@@ -335,12 +335,14 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
           refToSocket.triggerStartTransmissionHandle = setInterval(() => {
             this._triggerStartTransmission(refToSocket, newLocationName);
           }, 1000);
+        } else if (parts[3] === ChronoTrackCommands.guntime) {
+          // CT01_33~4~start~guntime~07:45:01.01~0~DF239A~0
+          // ToDo: How to handle guntimes?
+          warn('We received a guntime. But do not know what to do with it. So we drop it. Parts:', parts);
         } else {
           saveRead(parts);
         }
 
-        // CT01_33~4~start~guntime~07:45:01.01~0~DF239A~0
-        // ToDo: How to handle guntimes?
         break;
       }
 
