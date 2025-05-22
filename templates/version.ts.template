@@ -1,0 +1,20 @@
+/*
+  Version File for MyLapsToRacemapForwarder
+  Do not touch! Line will be modded by git hook triggered script scripts/handle-git-version.mjs
+*/
+
+export type ServiceVersion = {
+	gitProjectName: string;
+	gitBuildDate: string;
+	gitHeadHash: string;
+	gitBranch: string;
+	gitTag: string;
+};
+
+export const ToRacemapForwarderVersion: ServiceVersion = {
+  gitProjectName: 'GIT_PROJECT_NAME',
+  gitBuildDate: 'GIT_BUILD_DATE',
+  gitHeadHash: 'GIT_HEAD_HASH',
+  gitBranch: 'GIT_CURRENT_BRANCH',
+  gitTag: 'GIT_TAG',
+};

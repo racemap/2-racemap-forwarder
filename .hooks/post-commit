@@ -1,0 +1,3 @@
+#!/bin/sh
+
+node scripts/handle-git-version.mjs ./ ./templates/version.ts.template ./src/version.ts

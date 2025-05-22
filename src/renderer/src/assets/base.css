@@ -1,0 +1,27 @@
+:root {
+  --cloud-blue: '#ced9e3';
+  --pale-blue: '#36739a';
+  --light-blue: '#f0f5fa';
+  --dark-red: '#721c25';
+  --danger-red: '#dc3545';
+  --base-red: '#ff4646';
+  --alt-red: '#f53838';
+  --light-red: '#f8d7da';
+  --light-light-red: '#fef2f2';
+  --light-yellow: '#fcda9f';
+  --light-light-yellow: '#fefbea';
+  --base-yellow: '#ffff00';
+  --light-green: '#63d463';
+  --base-green: '#2e9e2e';
+  --dark-green: '#008000';
+  --light-gray: '#dee2e6';
+  --light-light-gray: '#f2f2f2';
+  --gray: '#ced4da';
+  --dark-gray: '#646464';
+  --dark-yellow: '#b88a3b';
+  --dark-blue: '#254a61';
+  --light-orange: '#ffa500';
+  --orange: '#b4530a';
+  --dark-dark-gray: '#202020';
+  --headline: '#404040';
+}

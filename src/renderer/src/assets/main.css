@@ -1,0 +1,22 @@
+@import './base.css';
+
+@font-face {
+  font-family: 'Cabin Condensed';
+  src: url('./assets/fonts/CabinCondensed-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  background-image: url('./background.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: repeat;
+  margin: 0;
+  font-family: 'Cabin Condensed', sans-serif;
+}
+
+h1 {
+  font-size: 4rem;
+  margin-block-end: 0.4em;
+}
