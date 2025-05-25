@@ -8,7 +8,7 @@
   "packageManager": "yarn@4.5.0",
   "build": {
     "appId": "com.2-racemap-forwarder",
-    "productName": "2 RaceMap Forwarder",
+    "productName": "2-racemap-forwarder",
     "mac": {
       "icon": "resources/icons/icon.icns"
     },

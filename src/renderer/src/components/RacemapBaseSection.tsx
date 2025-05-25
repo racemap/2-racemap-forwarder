@@ -156,7 +156,7 @@ const RacemapBaseSection = (): React.ReactNode => {
                   }
                   return false;
                 }}
-                style={{ backgroundColor: 'transparent' }}
+                style={{ backgroundColor: 'transparent' } as React.CSSProperties}
                 data={appState}
               />
             </StateDetailsContainer>
