@@ -72,3 +72,19 @@ You can change the defaults of the service by overriding the following environme
 | MYLAPS_LISTEN_PORT | 3097                | The port the mylaps service listens on                                                                        |
 | CHRONO_LISTEN_PORT | 3000                | The port the chronotrack service listens on                                                                   |
 | RACEMAP_API_HOST   | https://racemap.com | The host to send the requests to                                                                              |
+
+# Release Notes
+
+## 1.1.2
+
+- userFeedback dialog added
+
+## 1.1.1
+
+- allows overriding of local time zone offset
+
+## 1.1.0
+
+- first working version
+- supports MyLaps
+- supports Chrono Track
