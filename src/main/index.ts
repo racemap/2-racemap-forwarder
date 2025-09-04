@@ -16,6 +16,7 @@ import {
   upgradeAPIToken,
   prepareServerState,
   selectRacemapEvent,
+  setUserTimezoneOffset,
 } from './state';
 import ChronoTrackForwarder from './chronoTrack/forwarder';
 
@@ -115,7 +116,11 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.handle('setExpertMode', async (_invokeEvent, expertMode) => {
-    await setExpertMode(expertMode);
+    setExpertMode(expertMode);
+  });
+
+  ipcMain.handle('setUserTimezoneOffset', async (_invokeEvent, timeZoneOffsetInHours) => {
+    setUserTimezoneOffset(timeZoneOffsetInHours);
   });
 
   ipcMain.handle('selectRacemapEvent', async (_invokeEvent, eventId) => {

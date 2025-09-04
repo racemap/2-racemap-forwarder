@@ -53,6 +53,7 @@ export type ServerState = {
   version: ServiceVersion | null;
   myLapsForwarder: MyLapsForwarderState;
   chronoTrackForwarder: ChronoTrackForwarderState;
+  timeZoneOffsetInHours: number; // defaults to 0 if given any local time this is added to get UTC time
 };
 
 export type TimingRead = {

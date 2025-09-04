@@ -16,6 +16,8 @@ import {
   processStoredData,
   storeIncomingRawData,
   removeCertainBytesFromBuffer,
+  printEnvVar,
+  parseTimeToIsoStringWithUserDefinedOffset,
 } from '../src/main/functions';
 
 const RACEMAP_API_HOST = process.env.RACEMAP_API_HOST ?? 'https://racemap.com';
@@ -26,6 +28,13 @@ const CHRONO_LISTEN_PORT = Number.parseInt(process.env.CHRONO_LISTEN_PORT || '30
 
 const apiClient = new APIClient({ authorization: `Bearer ${RACEMAP_API_TOKEN}` });
 const forwarderIPAddress = LISTEN_MODE === 'private' ? '127.0.0.1' : '0.0.0.0';
+
+printEnvVar({ RACEMAP_API_HOST });
+printEnvVar({ RACEMAP_API_TOKEN });
+printEnvVar({ LISTEN_MODE });
+printEnvVar({ MYLAPS_LISTEN_PORT });
+printEnvVar({ CHRONO_LISTEN_PORT });
+printEnvVar({ LISTEN_MODE });
 
 const hasMyLapsForwarderInstance = !isPortInUse(MYLAPS_LISTEN_PORT);
 const hasChronoTrckForwarderInstance = !isPortInUse(CHRONO_LISTEN_PORT);
@@ -186,23 +195,47 @@ test('Test function removeCertainBytesFromBuffer', (t) => {
   );
 });
 
+test('Test parseTimeToIsoStringWithUserDefinedOffset function with different offsets', (t) => {
+  const timeString = '2025-03-08T16:13:57.417Z';
+  const resultWithZeroOffset = moment.utc(timeString).subtract(0, 'hour').toISOString();
+  const resultWith3HoursOffset = moment.utc(timeString).subtract(3, 'hour').toISOString();
+  const resultWithMinus2HoursOffset = moment.utc(timeString).subtract(-2, 'hour').toISOString();
+
+  const parsedWithZeroOffset = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'YYYY-MM-DDTHH:mm:ss.SSS[Z]', 0).toISOString();
+  t.is(parsedWithZeroOffset, resultWithZeroOffset, `timestamp should be ${resultWithZeroOffset} with offset 0 hours`);
+
+  const parsedWith3HourOffset = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'YYYY-MM-DDTHH:mm:ss.SSS[Z]', 3).toISOString();
+  t.is(parsedWith3HourOffset, resultWith3HoursOffset, `timestamp should be ${resultWith3HoursOffset} with offset 3 hours`);
+
+  const parsedWithMinus2HourOffset = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'YYYY-MM-DDTHH:mm:ss.SSS[Z]', -2).toISOString();
+  t.is(parsedWithMinus2HourOffset, resultWithMinus2HoursOffset, `timestamp should be ${resultWithMinus2HoursOffset} with offset -2 hours`);
+});
+
 test('Test function myLapsLagacyPassingToRead', (t) => {
+  // const legacyPassingString = 'KV8658316:13:57.417 3 0F  1000025030870'
+  const toUTCHoursOffset = new Date().getTimezoneOffset() / -60;
+  const result = moment.utc('2025-03-08T16:13:57.417Z').subtract(toUTCHoursOffset, 'hour').toISOString();
+
   const read = myLapsLagacyPassingToRead('Start', fixtures.myLaps.legacyPassingString);
 
   t.not(read, null, 'read should not be null');
   t.is(read?.chipId, `${MyLapsPrefix}KV86583`, 'chipId should be KV86583');
   t.is(read?.timingId, 'Start', 'timingId should be Start');
   t.is(read?.timingName, 'Start', 'timingName should be Start');
-  t.is(read?.timestamp, '2025-03-08T16:13:57.417Z', 'timestamp should be 2025-03-08T16:13:57.417Z');
+  t.is(read?.timestamp, result, `timestamp should be ${result}`);
 });
 
 test('Test function myLapsPassingToRead', (t) => {
+  // passingString = 't=13:11:30.904|c=0000041|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41',
+  const toUTCHoursOffset = new Date().getTimezoneOffset() / -60;
+  const result = moment.utc('2012-06-06T13:11:30.904Z').subtract(toUTCHoursOffset, 'hour').toISOString();
+
   const read = myLapsPassingToRead('Start001', 'Start', fixtures.myLaps.passingString);
   t.not(read, null, 'read should not be null');
   t.is(read?.chipId, `${MyLapsPrefix}0000041`, 'chipId should be 0000041');
   t.is(read?.timingId, 'Start001', 'timingId should be Start001');
   t.is(read?.timingName, 'Start', 'timingName should be Start');
-  t.is(read?.timestamp, '2012-06-06T13:11:30.904Z', 'timestamp should be 2012-06-06T13:11:30.904Z');
+  t.is(read?.timestamp, result, `timestamp should be ${result}`);
 });
 
 test('Try to spin up an instance of the mylaps forwarder', async (t) => {

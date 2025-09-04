@@ -16,6 +16,7 @@ let refToElectronWebContents: Electron.WebContents | null = null;
 
 export let serverState: ServerState = {
   ...EmptyServerState,
+  timeZoneOffsetInHours: new Date().getTimezoneOffset() / -60, // get the local timezone offset in hours
   apiToken: process.env.RACEMAP_API_TOKEN ?? null,
 };
 export const apiClient = new APIClient({ authorization: `Bearer ${serverState.apiToken}` });
@@ -25,6 +26,7 @@ function triggerStateChange(): void {
 }
 
 export function updateServerState(newState: Partial<ServerState>): void {
+  console.log('Update server state with', newState);
   serverState = {
     ...serverState,
     ...newState,
@@ -86,7 +88,7 @@ export function getServerState(): Promise<ServerState> {
 }
 
 export function saveServerState(): void {
-  fs.writeFileSync(storagePath, JSON.stringify(pick(serverState, ['apiToken', 'expertMode']), null, 2));
+  fs.writeFileSync(storagePath, JSON.stringify(pick(serverState, ['apiToken', 'expertMode', 'timeZoneOffsetInHours']), null, 2));
 }
 
 export async function loadServerState(): Promise<void> {
@@ -152,6 +154,13 @@ export async function selectRacemapEvent(eventId?: string): Promise<void> {
 export function setExpertMode(expertMode: boolean): void {
   updateServerState({
     expertMode,
+  });
+  triggerStateChange();
+}
+
+export function setUserTimezoneOffset(timeZoneOffsetInHours: number): void {
+  updateServerState({
+    timeZoneOffsetInHours,
   });
   triggerStateChange();
 }

@@ -60,9 +60,8 @@ export const ChronoTrackForwarderDetails = ({ forwarderState }: ChronoTrackForwa
   return (
     <DetailsContainer>
       <span>
-        {`The table list all connection from any software connected to Port ${forwarderState.listenPort}.
-				To forward reads from ChronoTrack connect the exporter and forward all
-				reads.`}
+        The table list all connection from any software connected to Port <strong>{forwarderState.listenPort}</strong>. To forward reads from
+        ChronoTrack connect the exporter and forward all reads.
       </span>
       <Table dataSource={data} columns={columns} />
     </DetailsContainer>

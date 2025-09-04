@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
 import type { ServerState } from '../types';
-import type { getServerState, selectRacemapEvent, setExpertMode } from '../main/state';
+import type { getServerState, selectRacemapEvent, setExpertMode, setUserTimezoneOffset } from '../main/state';
 import type { callExternalLink, upgradeAPIToken } from '../main/state';
 
 // Custom APIs for renderer
@@ -20,6 +20,10 @@ const api = {
 
   setExpertMode(...params: Parameters<typeof setExpertMode>): ReturnType<typeof setExpertMode> {
     ipcRenderer.invoke('setExpertMode', ...params);
+  },
+
+  setUserTimezoneOffset(...params: Parameters<typeof setUserTimezoneOffset>): ReturnType<typeof setUserTimezoneOffset> {
+    ipcRenderer.invoke('setUserTimezoneOffset', ...params);
   },
 
   selectRacemapEvent(...params: Parameters<typeof selectRacemapEvent>): ReturnType<typeof selectRacemapEvent> {
