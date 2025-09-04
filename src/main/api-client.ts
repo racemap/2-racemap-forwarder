@@ -1,6 +1,6 @@
 import withQuery from 'with-query';
 import { error } from './functions';
-import type { StoredTimingRead, TimingRead, RacemapEvent, RacemapUser, RacemapStarter } from '../types';
+import type { StoredTimingRead, TimingRead, RacemapEvent, RacemapUser, RacemapStarter, UserFeedbackPrototype, UserFeedback } from '../types';
 
 const RACEMAP_API_HOST = process.env.RACEMAP_API_HOST || 'https://racemap.com';
 
@@ -51,6 +51,19 @@ class APIClient {
     });
   }
 
+  async _postJSONReceiveJSON(path: string, data: Record<string, any> = {}): Promise<any> {
+    const res = await this._fetch(path, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    return res.json();
+  }
+
   async checkToken(): Promise<boolean> {
     try {
       await this._getJSON('/api/inspect');
@@ -98,6 +111,10 @@ class APIClient {
     lastReceive?: string;
   }): Promise<Array<StoredTimingRead>> {
     return this._getJSON(withQuery('/services/trackping/api/v1/timing_output/pings', query));
+  }
+
+  async createUserFeedback(feedback: Partial<UserFeedbackPrototype>): Promise<UserFeedback> {
+    return this._postJSONReceiveJSON('/api/user-feedback', feedback);
   }
 }
 

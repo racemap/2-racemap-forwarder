@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
-import type { ServerState } from '../types';
-import type { getServerState, selectRacemapEvent, setExpertMode, setUserTimezoneOffset } from '../main/state';
+import type { ServerState, UserFeedbackPrototype } from '../types';
+import type { getServerState, selectRacemapEvent, setExpertMode, setUserTimezoneOffset, createUserFeedback } from '../main/state';
 import type { callExternalLink, upgradeAPIToken } from '../main/state';
 
 // Custom APIs for renderer
@@ -26,12 +26,15 @@ const api = {
     ipcRenderer.invoke('setUserTimezoneOffset', ...params);
   },
 
+  createUserFeedback(feedback: UserFeedbackPrototype): ReturnType<typeof createUserFeedback> {
+    return ipcRenderer.invoke('createUserFeedback', feedback);
+  },
+
   selectRacemapEvent(...params: Parameters<typeof selectRacemapEvent>): ReturnType<typeof selectRacemapEvent> {
     return ipcRenderer.invoke('selectRacemapEvent', ...params);
   },
 
   onServerStateChange: (callback: (serverState: ServerState) => void) => {
-    console.log('onServerStateChange');
     ipcRenderer.on('onServerStateChange', (_event, serverState: ServerState) => {
       callback(serverState);
     });
@@ -42,7 +45,6 @@ const api = {
   },
 
   onNewStdOutLine: (callback: (serverState: string) => void) => {
-    console.log('onNewStdOutLine');
     ipcRenderer.on('onNewStdOutLine', (_event, line: string) => {
       callback(line);
     });
@@ -59,7 +61,6 @@ export type API = typeof api;
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
 if (process.contextIsolated) {
-  console.log('The Electron context is isolated');
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI);
     contextBridge.exposeInMainWorld('api', api);

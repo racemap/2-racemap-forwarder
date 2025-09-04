@@ -5,6 +5,31 @@ import type { ServiceVersion } from './version';
 import type { ChronoTrackDevice, ChronoTrackForwarderState } from './main/chronoTrack/types';
 import type { MyLapsDevice, MyLapsForwarderState, MyLapsLocation } from './main/mylaps/types';
 
+export type UserFeedbackSystemInfo = {
+  url: string;
+  browser: string;
+  os: string;
+  engine?: string;
+  device?: string;
+  userAgent?: string;
+  timestamp: Date;
+};
+
+export type UserFeedbackPrototype = {
+  content: string;
+  source: string;
+  systemInfo: UserFeedbackSystemInfo;
+};
+
+export type UserFeedback = UserFeedbackPrototype & {
+  id: string;
+  hasBeenRead: boolean;
+  creatorId: string;
+  updaterId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type RacemapStarter = {
   id: string;
   createdAt: string;

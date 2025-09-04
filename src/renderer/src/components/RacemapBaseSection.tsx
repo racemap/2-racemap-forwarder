@@ -12,6 +12,7 @@ import { EyeTwoTone, InfoCircleTwoTone, CheckCircleTwoTone, DoubleRightOutlined,
 
 import 'react-json-view-lite/dist/index.css';
 import { TimeZoneIndicator } from './TimeZoneIndicator';
+import { UserFeedback } from './UserFeedback';
 
 const RacemapBaseSection = (): React.ReactNode => {
   const [appState, setAppState] = React.useState<ServerState>(EmptyServerState);
@@ -166,6 +167,7 @@ const RacemapBaseSection = (): React.ReactNode => {
         )}
       </Row>
       <TimingSystemTabs appState={appState} logLines={stdout} />
+      <UserFeedback user={appState.user} />
     </>
   );
 };

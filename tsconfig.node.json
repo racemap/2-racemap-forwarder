@@ -6,7 +6,8 @@
 		"src/preload/**/*",
 		"src/types.ts",
 		"src/consts.ts",
-		"src/version.ts"
+		"src/version.ts",
+		"src/functions.ts",
 	],
 	"compilerOptions": {
 		"composite": true,

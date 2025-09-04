@@ -5,7 +5,7 @@ import APIClient from './api-client';
 import { error, info, log, success } from './functions';
 import { app, shell } from 'electron';
 import { EmptyServerState } from '../consts';
-import type { ServerState } from '../types';
+import type { ServerState, UserFeedbackPrototype } from '../types';
 
 const isElectron = !!process.versions?.electron;
 
@@ -26,7 +26,6 @@ function triggerStateChange(): void {
 }
 
 export function updateServerState(newState: Partial<ServerState>): void {
-  console.log('Update server state with', newState);
   serverState = {
     ...serverState,
     ...newState,
@@ -163,6 +162,14 @@ export function setUserTimezoneOffset(timeZoneOffsetInHours: number): void {
     timeZoneOffsetInHours,
   });
   triggerStateChange();
+}
+
+export function createUserFeedback(feedback: UserFeedbackPrototype): Promise<void> {
+  info('Create user feedback', feedback);
+  if (serverState.apiTokenIsValid) {
+    return apiClient.createUserFeedback(feedback);
+  }
+  return Promise.reject(new Error('API token is not valid'));
 }
 
 export function callExternalLink(url: string): void {

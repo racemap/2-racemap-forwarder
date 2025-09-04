@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import winIcon from '../../resources/icons/icon.ico?asset';
 import macIcon from '../../resources/icons/icon.icns?asset';
 import linuxIcon from '../../resources/icons/128x128.png?asset';
@@ -16,18 +17,22 @@ import {
   upgradeAPIToken,
   prepareServerState,
   selectRacemapEvent,
+  createUserFeedback,
   setUserTimezoneOffset,
 } from './state';
 import ChronoTrackForwarder from './chronoTrack/forwarder';
+import { UserFeedbackPrototype } from '../types';
+
+dotenv.config();
 
 async function bootup(mainWindow: BrowserWindow) {
   log('Hello from 2-racemap-forwarder');
 
-  const RACEMAP_API_HOST = process.env.RCEMAP_API_HOST ?? 'https://racemap.com';
+  const RACEMAP_API_HOST = process.env.RACEMAP_API_HOST ?? 'https://racemap.com';
   const RACEMAP_API_TOKEN = serverState.apiToken ?? '';
   const LISTEN_MODE = process.env.LISTEN_MODE?.toLocaleLowerCase() ?? 'private';
-  const MYLAPS_LISTEN_PORT = Number.parseInt(process.env.LISTEN_PORT ?? '3097');
-  const CHRONO_LISTEN_PORT = Number.parseInt(process.env.LISTEN_PORT ?? '3000');
+  const MYLAPS_LISTEN_PORT = Number.parseInt(process.env.MYLAPS_LISTEN_PORT ?? '3097');
+  const CHRONO_LISTEN_PORT = Number.parseInt(process.env.CHRONO_LISTEN_PORT ?? '3000');
   const VERSION = ToRacemapForwarderVersion.gitTag.split('_')[0];
 
   printEnvVar({ RACEMAP_API_HOST });
@@ -121,6 +126,10 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('setUserTimezoneOffset', async (_invokeEvent, timeZoneOffsetInHours) => {
     setUserTimezoneOffset(timeZoneOffsetInHours);
+  });
+
+  ipcMain.handle('createUserFeedback', async (_invokeEvent, feedback: UserFeedbackPrototype) => {
+    await createUserFeedback(feedback);
   });
 
   ipcMain.handle('selectRacemapEvent', async (_invokeEvent, eventId) => {
