@@ -5,7 +5,7 @@ import APIClient from './api-client';
 import { error, info, log, success } from './functions';
 import { app, shell } from 'electron';
 import { EmptyServerState } from '../consts';
-import type { ServerState, UserFeedbackPrototype } from '../types';
+import type { ServerState, UserFeedback, UserFeedbackPrototype } from '../types';
 
 const isElectron = !!process.versions?.electron;
 
@@ -17,8 +17,8 @@ let refToElectronWebContents: Electron.WebContents | null = null;
 export let serverState: ServerState = {
   ...EmptyServerState,
   timeZoneOffsetInHours: new Date().getTimezoneOffset() / -60, // get the local timezone offset in hours
-  apiToken: process.env.RACEMAP_API_TOKEN ?? null,
 };
+
 export const apiClient = new APIClient({ authorization: `Bearer ${serverState.apiToken}` });
 
 function triggerStateChange(): void {
@@ -90,13 +90,22 @@ export function saveServerState(): void {
   fs.writeFileSync(storagePath, JSON.stringify(pick(serverState, ['apiToken', 'expertMode', 'timeZoneOffsetInHours']), null, 2));
 }
 
-export async function loadServerState(): Promise<void> {
+export async function loadServerState(apiTokenFromEnv: string | null): Promise<void> {
   if (fs.existsSync(storagePath)) {
     const parsedState = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
     serverState = {
       ...serverState,
       ...parsedState,
     };
+
+    if (serverState.apiToken === '') {
+      if (apiTokenFromEnv) {
+        console.info('Using api token from env variable RACEMAP_API_TOKEN');
+        serverState.apiToken = apiTokenFromEnv;
+      }
+    } else {
+      console.info('Using api token from config file');
+    }
 
     info('Try to read/find your RACEMAP API token');
     if (serverState.apiToken === '') {
@@ -117,9 +126,9 @@ export async function loadServerState(): Promise<void> {
   }
 }
 
-export async function prepareServerState(webContents: Electron.WebContents): Promise<void> {
+export async function prepareServerState(apiTokenFromEnv: string | null, webContents: Electron.WebContents): Promise<void> {
   refToElectronWebContents = webContents;
-  await loadServerState();
+  await loadServerState(apiTokenFromEnv);
 
   if (serverState.apiTokenIsValid) {
     success('|-> API Token is valid');
@@ -164,12 +173,8 @@ export function setUserTimezoneOffset(timeZoneOffsetInHours: number): void {
   triggerStateChange();
 }
 
-export function createUserFeedback(feedback: UserFeedbackPrototype): Promise<void> {
-  info('Create user feedback', feedback);
-  if (serverState.apiTokenIsValid) {
-    return apiClient.createUserFeedback(feedback);
-  }
-  return Promise.reject(new Error('API token is not valid'));
+export function createUserFeedback(feedback: UserFeedbackPrototype): Promise<UserFeedback> {
+  return apiClient.createUserFeedback(feedback);
 }
 
 export function callExternalLink(url: string): void {

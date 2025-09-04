@@ -1,15 +1,14 @@
-import withQuery from 'with-query';
+import { envs } from './envs';
 import { error } from './functions';
 import type { StoredTimingRead, TimingRead, RacemapEvent, RacemapUser, RacemapStarter, UserFeedbackPrototype, UserFeedback } from '../types';
-
-const RACEMAP_API_HOST = process.env.RACEMAP_API_HOST || 'https://racemap.com';
+import withQuery from 'with-query';
 
 class APIClient {
   _host = '';
   _headers: HeadersInit = {};
 
   constructor(headers: HeadersInit = {}) {
-    this._host = RACEMAP_API_HOST;
+    this._host = envs.RACEMAP_API_HOST;
     this._headers = headers;
   }
 
@@ -60,7 +59,6 @@ class APIClient {
       },
       body: JSON.stringify(data),
     });
-
     return res.json();
   }
 

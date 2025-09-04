@@ -11,7 +11,6 @@ import { isNotEmptyString } from '../../../functions';
 import { ErrorBoundary } from './ErrorBoundary';
 
 const { TextArea } = Input;
-// const apiClient = RacemapAPIClient.fromWindowLocation();
 
 export const UserFeedback = ({ user }: { user: RacemapUser | null }) => {
   const [visible, setVisible] = useState(false);
@@ -34,7 +33,7 @@ export const UserFeedback = ({ user }: { user: RacemapUser | null }) => {
     try {
       const feedback: UserFeedbackPrototype = {
         content,
-        source: 'racemap-forwarder',
+        source: '2-racemap-forwarder',
         systemInfo: {
           browser: `${userAgent.browser.name} ${userAgent.browser.version}`,
           os: `${userAgent.os.name} ${userAgent.os.version}`,

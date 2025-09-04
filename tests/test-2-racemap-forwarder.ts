@@ -1,3 +1,4 @@
+import { envs } from '../src/main/envs';
 import moment from 'moment';
 import APIClient from '../src/main/api-client';
 import MyLapsForwarder from '../src/main/mylaps/forwarder';
@@ -16,28 +17,14 @@ import {
   processStoredData,
   storeIncomingRawData,
   removeCertainBytesFromBuffer,
-  printEnvVar,
   parseTimeToIsoStringWithUserDefinedOffset,
 } from '../src/main/functions';
 
-const RACEMAP_API_HOST = process.env.RACEMAP_API_HOST ?? 'https://racemap.com';
-const RACEMAP_API_TOKEN = process.env.RACEMAP_API_TOKEN ?? '';
-const LISTEN_MODE = process.env.LISTEN_MODE?.toLocaleLowerCase() ?? 'private';
-const MYLAPS_LISTEN_PORT = Number.parseInt(process.env.MYLAPS_LISTEN_PORT || '3097');
-const CHRONO_LISTEN_PORT = Number.parseInt(process.env.CHRONO_LISTEN_PORT || '3000');
+const apiClient = new APIClient({ authorization: `Bearer ${envs.RACEMAP_API_TOKEN}` });
+const forwarderIPAddress = envs.LISTEN_MODE === 'private' ? '127.0.0.1' : '0.0.0.0';
 
-const apiClient = new APIClient({ authorization: `Bearer ${RACEMAP_API_TOKEN}` });
-const forwarderIPAddress = LISTEN_MODE === 'private' ? '127.0.0.1' : '0.0.0.0';
-
-printEnvVar({ RACEMAP_API_HOST });
-printEnvVar({ RACEMAP_API_TOKEN });
-printEnvVar({ LISTEN_MODE });
-printEnvVar({ MYLAPS_LISTEN_PORT });
-printEnvVar({ CHRONO_LISTEN_PORT });
-printEnvVar({ LISTEN_MODE });
-
-const hasMyLapsForwarderInstance = !isPortInUse(MYLAPS_LISTEN_PORT);
-const hasChronoTrckForwarderInstance = !isPortInUse(CHRONO_LISTEN_PORT);
+const hasMyLapsForwarderInstance = !isPortInUse(envs.MYLAPS_LISTEN_PORT);
+const hasChronoTrckForwarderInstance = !isPortInUse(envs.CHRONO_LISTEN_PORT);
 
 const shortId001 = shortIdBuilder();
 const times: TPredictionTestTimes = {
@@ -239,17 +226,17 @@ test('Test function myLapsPassingToRead', (t) => {
 });
 
 test('Try to spin up an instance of the mylaps forwarder', async (t) => {
-  if (await isPortInUse(MYLAPS_LISTEN_PORT)) {
-    t.log(`Port ${MYLAPS_LISTEN_PORT} is already in use. We do not have to spin a server.`);
+  if (await isPortInUse(envs.MYLAPS_LISTEN_PORT)) {
+    t.log(`Port ${envs.MYLAPS_LISTEN_PORT} is already in use. We do not have to spin a server.`);
     t.pass();
   } else {
-    state.myLaps.forwarder = new MyLapsForwarder(apiClient, MYLAPS_LISTEN_PORT);
+    state.myLaps.forwarder = new MyLapsForwarder(apiClient, envs.MYLAPS_LISTEN_PORT);
     t.not(state.myLaps.forwarder, null, 'instance of MyLapsForwarder is not null');
   }
 });
 
-test(`should connect to tcp://${forwarderIPAddress}:${MYLAPS_LISTEN_PORT}`, async (t) => {
-  state.myLaps.aTCPClient = await connectTcpSocket(forwarderIPAddress, MYLAPS_LISTEN_PORT);
+test(`should connect to tcp://${forwarderIPAddress}:${envs.MYLAPS_LISTEN_PORT}`, async (t) => {
+  state.myLaps.aTCPClient = await connectTcpSocket(forwarderIPAddress, envs.MYLAPS_LISTEN_PORT);
   t.not(state.myLaps.aTCPClient, null, 'tcp client should be not null but is');
   if (state.myLaps.aTCPClient != null) {
     state.myLaps.aTCPClient.sendFrame = (text: string) => {
@@ -458,17 +445,17 @@ test('the server should have responded with AckMarker for the last marker telegr
 });
 
 test('Try to spin up an instance of the chronotrack forwarder', async (t) => {
-  if (await isPortInUse(CHRONO_LISTEN_PORT)) {
-    t.log(`Port ${CHRONO_LISTEN_PORT} is already in use. We do not have to spin a server.`);
+  if (await isPortInUse(envs.CHRONO_LISTEN_PORT)) {
+    t.log(`Port ${envs.CHRONO_LISTEN_PORT} is already in use. We do not have to spin a server.`);
     t.pass();
   } else {
-    state.chronoTrack.forwarder = new ChronoTrackForwarder(apiClient, CHRONO_LISTEN_PORT);
+    state.chronoTrack.forwarder = new ChronoTrackForwarder(apiClient, envs.CHRONO_LISTEN_PORT);
     t.not(state.chronoTrack.forwarder, null, 'instance of ChronoTrackForwarder is not null');
   }
 });
 
-test(`should connect to tcp://${forwarderIPAddress}:${CHRONO_LISTEN_PORT}`, async (t) => {
-  state.chronoTrack.aTCPClient = await connectTcpSocket(forwarderIPAddress, CHRONO_LISTEN_PORT);
+test(`should connect to tcp://${forwarderIPAddress}:${envs.CHRONO_LISTEN_PORT}`, async (t) => {
+  state.chronoTrack.aTCPClient = await connectTcpSocket(forwarderIPAddress, envs.CHRONO_LISTEN_PORT);
   t.not(state.chronoTrack.aTCPClient, null, 'tcp client should be not null but is');
 
   if (state.chronoTrack.aTCPClient != null) {
