@@ -365,7 +365,8 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
       }
       case 'iso': {
         // we have: 2008-10-16T14:02:15.31 => expected to be UTC
-        timestamp = moment.utc(timeString, 'YYYY-MM-DDTHH:mm:ss.SS').toDate();
+        // timestamp = moment.utc(timeString, 'YYYY-MM-DDTHH:mm:ss.SS').toDate();
+        timestamp = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'YYYY-MM-DDTHH:mm:ss.SS', serverState.timeZoneOffsetInHours);
         break;
       }
       case 'unix': {
