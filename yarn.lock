@@ -30,6 +30,7 @@ __metadata:
     antd: "npm:^5.24.8"
     ava: "npm:^3.15.0"
     classnames: "npm:^2.2.6"
+    dmg-license: "npm:^1.0.11"
     dotenv: "npm:^17.2.2"
     dotenv-load: "npm:^3.0.0"
     electron: "npm:^35.2.1"
@@ -4198,6 +4199,7 @@ __metadata:
     verror: "npm:^1.10.0"
   bin:
     dmg-license: bin/dmg-license.js
+  checksum: 10c0/feef35cfb45270a72daadcca9584be5cb840f924448b9d4e543fcd61f1b6d471151049f277c91de1d8b003fad6203d0176066a5f427a01df5fb073402cb8c8b7
   conditions: os=darwin
   languageName: node
   linkType: hard
@@ -6093,6 +6095,7 @@ __metadata:
   dependencies:
     cli-truncate: "npm:^2.1.0"
     node-addon-api: "npm:^1.6.3"
+  checksum: 10c0/bc6f08ac421e5e92ed20f3825f123fd705e036612b2b6aa687958de753c06f32e54f0203ef55540869e3ee189eaea15e43a2757f3a90e555c4dd512c9422da43
   conditions: os=darwin
   languageName: node
   linkType: hard

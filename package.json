@@ -2,7 +2,7 @@
   "name": "2-racemap-forwarder",
   "version": "v1.1.3",
   "main": "out/main/index.js",
-  "author": "jens",
+  "author": "Jens Haupt <jens.haupt@racemap.com> (https://racemap.com)",  
   "license": "MIT",
   "private": true,
   "packageManager": "yarn@4.5.0",
@@ -10,13 +10,20 @@
     "appId": "com.2-racemap-forwarder",
     "productName": "2-racemap-forwarder",
     "mac": {
-      "icon": "resources/icons/icon.icns"
+      "icon": "resources/icons/icon.icns",
+      "target": [        
+        "zip"
+      ]
     },
     "win": {
       "icon": "resources/icons/icon.ico"
     },
     "linux": {
-      "icon": "resources/icon.png"
+      "icon": "resources/icon.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     }
   },
   "scripts": {
@@ -46,6 +53,7 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "antd": "^5.24.8",
+    "dmg-license": "^1.0.11",
     "dotenv": "^17.2.2",
     "electron-updater": "^6.3.9",
     "react-json-view-lite": "^2.4.1"
