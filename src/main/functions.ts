@@ -188,9 +188,9 @@ export const printEnvVar = (envVar: { [name: string]: unknown }, isPublic = true
 
 // we expect the times to be local time
 // so we need to convert them to UTC by subtracting the user defined timezone offset
-// and because it could be something diffrent depending on the time zone awareness of the local system
-// we do the math ourselfs
-// Despite the we are optemistic and the default value timeZoneOffsetInHours is the local computers timezone offset
+// and because it could be something different depending on the time zone awareness of the local system
+// we do the math ourselves
+// Despite that we are optimistic and the default value timeZoneOffsetInHours is the local computer's timezone offset
 // it reads as UTC + timeZoneOffsetInHours
 // e.g. if the local computer is in UTC+2 the timeZoneOffsetInHours is 2
 // so we need to subtract 2 hours to get UTC time
