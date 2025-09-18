@@ -75,6 +75,10 @@ You can change the defaults of the service by overriding the following environme
 
 # Release Notes
 
+## 1.1.3
+
+- overriding of local time zone offset also applies to isotimes received from ChronoTrack now (even ISO timestamps are not in UTC)
+
 ## 1.1.2
 
 - userFeedback dialog added

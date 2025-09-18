@@ -1,6 +1,6 @@
 {
   "name": "2-racemap-forwarder",
-  "version": "v1.1.2",
+  "version": "v1.1.3",
   "main": "out/main/index.js",
   "author": "jens",
   "license": "MIT",
