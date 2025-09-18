@@ -60,7 +60,7 @@ export function myLapsMarkerToRead(locationName: string, markerDetails: string):
     marker[myLapsMarkerKeyToName(key as MyLapsMarkerShortKeys)] = value;
   }
 
-  // having no time ist useless to create a timing read
+  // having no time is useless to create a timing read
   if (!marker.time) {
     return null;
   }
