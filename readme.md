@@ -26,10 +26,9 @@ The service also manages the communication with the MyLaps|ChronoTrack software.
 
 You can download the latest binary for your platform from the here and run it with the following commands.
 
-- [2-racemap-forwarder-win-x64-v1.1.3.exe](https://github.com/racemap/2-racemap-forwarder/releases/download/v1.1.3/2-racemap-forwarder-win-x64-v1.1.3.exe
-)
-- [2-racemap-forwarder-1.1.3.AppImage](https://github.com/racemap/2-racemap-forwarder/releases/download/v1.1.3/2-racemap-forwarder-1.1.3.AppImage)
-- [2-racemap-forwarder_1.1.3_amd64.snap](https://github.com/racemap/2-racemap-forwarder/releases/download/v1.1.3/2-racemap-forwarder_1.1.3_amd64.snap)
+- [2-racemap-forwarder-win-x64-v1.1.3.exe](https://github.com/racemap/2-racemap-forwarder/releases/download/untagged-c01271c6b3d8ae7c78d6/2-racemap-forwarder-win-x64-v1.1.3.exe)
+- [2-racemap-forwarder-1.1.3.AppImage](https://github.com/racemap/2-racemap-forwarder/releases/download/untagged-c01271c6b3d8ae7c78d6/2-racemap-forwarder-1.1.3.AppImage)
+- [2-racemap-forwarder_1.1.3_amd64.deb](https://github.com/racemap/2-racemap-forwarder/releases/download/untagged-c01271c6b3d8ae7c78d6/2-racemap-forwarder_1.1.3_amd64.deb)
 
 #### Windows
 
