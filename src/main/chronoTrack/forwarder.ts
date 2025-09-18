@@ -6,8 +6,8 @@ import shortId from 'shortid';
 import type APIClient from '../api-client';
 import type { TimingRead } from '../../types';
 import BaseForwarder from '../base-forwarder';
-import { updateServerState } from '../state';
-import { error, info, log, processStoredData, storeIncomingRawData, success, warn } from '../functions';
+import { serverState, updateServerState } from '../state';
+import { error, info, log, parseTimeToIsoStringWithUserDefinedOffset, processStoredData, storeIncomingRawData, success, warn } from '../functions';
 import {
   type MessageParts,
   ChronoTrackProtocol,
@@ -354,23 +354,26 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
   };
 
   _parseTime(_refToSocket: ChronoTrackExtendedSocket, timeString: string): Date {
-    let time = new Date(0);
+    let timestamp = new Date(0);
     switch (ChronoTrackFeatures['time-format']) {
       case 'normal': {
         // we have no date just 14:02:15.31
-        time = moment.utc(timeString, 'HH:mm:ss.SS').toDate();
+        // this is just local time so we need to add the timezone offset to get UTC time
+        // timestamp = moment.utc(timeString, 'HH:mm:ss.SS').subtract(serverState.timeZoneOffsetInHours, 'hours').toDate();
+        timestamp = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'HH:mm:ss.SS', serverState.timeZoneOffsetInHours);
         break;
       }
       case 'iso': {
         // we have: 2008-10-16T14:02:15.31 => expected to be UTC
-        time = moment.utc(timeString, 'YYYY-MM-DDTHH:mm:ss.SS').toDate();
+        // timestamp = moment.utc(timeString, 'YYYY-MM-DDTHH:mm:ss.SS').toDate();
+        timestamp = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'YYYY-MM-DDTHH:mm:ss.SS', serverState.timeZoneOffsetInHours);
         break;
       }
       case 'unix': {
-        time = moment.unix(Number.parseFloat(timeString)).toDate();
+        timestamp = moment.unix(Number.parseFloat(timeString)).toDate();
       }
     }
-    return time;
+    return timestamp;
   }
 
   _triggerStartTransmission(socket: ChronoTrackExtendedSocket, locationName: string): void {

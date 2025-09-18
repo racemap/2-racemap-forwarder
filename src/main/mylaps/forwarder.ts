@@ -429,7 +429,6 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
           }
 
           case MyLapsFunctions.Marker: {
-            console.log('Marker', parts);
             const locationName = parts[0];
             if (len > 4) {
               const markers: Array<TimingRead> = [];

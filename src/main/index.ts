@@ -3,49 +3,37 @@ import macIcon from '../../resources/icons/icon.icns?asset';
 import linuxIcon from '../../resources/icons/128x128.png?asset';
 import MyLapsForwarder from './mylaps/forwarder';
 import { join } from 'node:path';
-import { ToRacemapForwarderVersion } from '../version';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { app, shell, BrowserWindow, ipcMain } from 'electron';
-import { info, log, prepareLogger, printEnvVar } from './functions';
+import { info, log, prepareLogger } from './functions';
 import {
   apiClient,
-  serverState,
   setExpertMode,
   getServerState,
   saveServerState,
   upgradeAPIToken,
   prepareServerState,
   selectRacemapEvent,
+  createUserFeedback,
+  setUserTimezoneOffset,
 } from './state';
 import ChronoTrackForwarder from './chronoTrack/forwarder';
+import { UserFeedbackPrototype } from '../types';
+import { envs } from './envs';
 
 async function bootup(mainWindow: BrowserWindow) {
   log('Hello from 2-racemap-forwarder');
 
-  const RACEMAP_API_HOST = process.env.RCEMAP_API_HOST ?? 'https://racemap.com';
-  const RACEMAP_API_TOKEN = serverState.apiToken ?? '';
-  const LISTEN_MODE = process.env.LISTEN_MODE?.toLocaleLowerCase() ?? 'private';
-  const MYLAPS_LISTEN_PORT = Number.parseInt(process.env.LISTEN_PORT ?? '3097');
-  const CHRONO_LISTEN_PORT = Number.parseInt(process.env.LISTEN_PORT ?? '3000');
-  const VERSION = ToRacemapForwarderVersion.gitTag.split('_')[0];
-
-  printEnvVar({ RACEMAP_API_HOST });
-  printEnvVar({ RACEMAP_API_TOKEN });
-  printEnvVar({ LISTEN_MODE });
-  printEnvVar({ MYLAPS_LISTEN_PORT });
-  printEnvVar({ CHRONO_LISTEN_PORT });
-  printEnvVar({ VERSION });
-
   info('Check LISTEN_MODE');
-  if (!['private', 'public'].includes(LISTEN_MODE)) {
+  if (!['private', 'public'].includes(envs.LISTEN_MODE)) {
     throw new Error(`Invalid listen mode. Please use either 'private' or 'public'`);
   }
 
   prepareLogger(mainWindow.webContents);
-  prepareServerState(mainWindow.webContents);
+  prepareServerState(envs.RACEMAP_API_TOKEN, mainWindow.webContents);
 
-  new MyLapsForwarder(apiClient, MYLAPS_LISTEN_PORT, LISTEN_MODE === 'private');
-  new ChronoTrackForwarder(apiClient, CHRONO_LISTEN_PORT, LISTEN_MODE === 'private');
+  new MyLapsForwarder(apiClient, envs.MYLAPS_LISTEN_PORT, envs.LISTEN_MODE === 'private');
+  new ChronoTrackForwarder(apiClient, envs.CHRONO_LISTEN_PORT, envs.LISTEN_MODE === 'private');
 }
 
 const appIcon = {
@@ -115,7 +103,15 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.handle('setExpertMode', async (_invokeEvent, expertMode) => {
-    await setExpertMode(expertMode);
+    setExpertMode(expertMode);
+  });
+
+  ipcMain.handle('setUserTimezoneOffset', async (_invokeEvent, timeZoneOffsetInHours) => {
+    setUserTimezoneOffset(timeZoneOffsetInHours);
+  });
+
+  ipcMain.handle('createUserFeedback', async (_invokeEvent, feedback: UserFeedbackPrototype) => {
+    await createUserFeedback(feedback);
   });
 
   ipcMain.handle('selectRacemapEvent', async (_invokeEvent, eventId) => {

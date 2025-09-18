@@ -11,6 +11,8 @@ import { Col, Flex, Input, Row, Select, Switch } from 'antd';
 import { EyeTwoTone, InfoCircleTwoTone, CheckCircleTwoTone, DoubleRightOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 
 import 'react-json-view-lite/dist/index.css';
+import { TimeZoneIndicator } from './TimeZoneIndicator';
+import { UserFeedback } from './UserFeedback';
 
 const RacemapBaseSection = (): React.ReactNode => {
   const [appState, setAppState] = React.useState<ServerState>(EmptyServerState);
@@ -74,6 +76,7 @@ const RacemapBaseSection = (): React.ReactNode => {
         <span>{appState.version?.gitTag.split('_')[0]}</span>
         <Switch size="small" title="Toggle expert mode" checked={appState.expertMode} onChange={onExpertChange} />
       </Flex>
+      <TimeZoneIndicator appState={appState} />
       <HorizontalLine />
       <Row>
         <Col span={appState.expertMode ? 13 : 24}>
@@ -164,6 +167,7 @@ const RacemapBaseSection = (): React.ReactNode => {
         )}
       </Row>
       <TimingSystemTabs appState={appState} logLines={stdout} />
+      <UserFeedback user={appState.user} />
     </>
   );
 };

@@ -1,4 +1,3 @@
-import moment from 'moment';
 import type { TimingRead } from '../../types';
 import { MyLapsPrefix } from './consts';
 import type {
@@ -12,6 +11,8 @@ import type {
   MyLapsMarkerShortKeys,
   MyLapsPassingShortKeys,
 } from './types';
+import { serverState } from '../state';
+import { parseTimeToIsoStringWithUserDefinedOffset } from '../functions';
 
 function prefix(chipId: string): string {
   // When "MyLaps_" is not prepended it should be prepended
@@ -40,7 +41,8 @@ export function myLapsLagacyPassingToRead(locationName: string, passingDetails: 
     const read: TimingRead = {
       timingId: locationName,
       timingName: locationName,
-      timestamp: moment.utc(`${date} ${time}`, 'YYMMDD hh:mm:ss.SSS').toISOString(),
+      // timestamp: moment.utc(`${date} ${time}`, 'YYMMDD hh:mm:ss.SSS').toISOString(),
+      timestamp: parseTimeToIsoStringWithUserDefinedOffset(`${date} ${time}`, 'YYMMDD hh:mm:ss.SSS', serverState.timeZoneOffsetInHours).toISOString(),
       chipId: prefix(transponderId),
     };
     return read;
@@ -57,9 +59,16 @@ export function myLapsMarkerToRead(locationName: string, markerDetails: string):
     const [key, value] = detail.split('=');
     marker[myLapsMarkerKeyToName(key as MyLapsMarkerShortKeys)] = value;
   }
+
+  // having no time is useless to create a timing read
+  if (!marker.time) {
+    return null;
+  }
+
   return {
     timingId: locationName,
-    timestamp: moment.utc(marker.time, 'hh:mm:ss.SSS').toISOString(),
+    // timestamp: moment.utc(marker.time, 'hh:mm:ss.SSS').toISOString(),
+    timestamp: parseTimeToIsoStringWithUserDefinedOffset(marker.time, 'hh:mm:ss.SSS', serverState.timeZoneOffsetInHours).toISOString(),
     timingName: marker.markerName,
     chipId: '',
   };
@@ -167,7 +176,12 @@ export function myLapsPassingToRead(timingId: string, timingName: string, passin
       timingId,
       timingName,
       chipId: prefix(passing.chipCode),
-      timestamp: moment.utc(`${passing.date}_${passing.time}`, 'YYMMDD_hh:mm:ss.SSS').toISOString(),
+      // timestamp: moment.utc(`${passing.date}_${passing.time}`, 'YYMMDD_hh:mm:ss.SSS').toISOString(),
+      timestamp: parseTimeToIsoStringWithUserDefinedOffset(
+        `${passing.date}_${passing.time}`,
+        'YYMMDD_hh:mm:ss.SSS',
+        serverState.timeZoneOffsetInHours,
+      ).toISOString(),
     };
   }
   return null;

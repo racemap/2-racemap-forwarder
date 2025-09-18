@@ -1,15 +1,14 @@
-import withQuery from 'with-query';
+import { envs } from './envs';
 import { error } from './functions';
-import type { StoredTimingRead, TimingRead, RacemapEvent, RacemapUser, RacemapStarter } from '../types';
-
-const RACEMAP_API_HOST = process.env.RACEMAP_API_HOST || 'https://racemap.com';
+import type { StoredTimingRead, TimingRead, RacemapEvent, RacemapUser, RacemapStarter, UserFeedbackPrototype, UserFeedback } from '../types';
+import withQuery from 'with-query';
 
 class APIClient {
   _host = '';
   _headers: HeadersInit = {};
 
   constructor(headers: HeadersInit = {}) {
-    this._host = RACEMAP_API_HOST;
+    this._host = envs.RACEMAP_API_HOST;
     this._headers = headers;
   }
 
@@ -49,6 +48,18 @@ class APIClient {
       },
       body: JSON.stringify(data),
     });
+  }
+
+  async _postJSONReceiveJSON(path: string, data: Record<string, any> = {}): Promise<any> {
+    const res = await this._fetch(path, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return res.json();
   }
 
   async checkToken(): Promise<boolean> {
@@ -98,6 +109,10 @@ class APIClient {
     lastReceive?: string;
   }): Promise<Array<StoredTimingRead>> {
     return this._getJSON(withQuery('/services/trackping/api/v1/timing_output/pings', query));
+  }
+
+  async createUserFeedback(feedback: Partial<UserFeedbackPrototype>): Promise<UserFeedback> {
+    return this._postJSONReceiveJSON('/api/user-feedback', feedback);
   }
 }
 

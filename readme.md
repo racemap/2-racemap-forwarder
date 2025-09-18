@@ -18,6 +18,7 @@ The service also manages the communication with the MyLaps|ChronoTrack software.
 3. Run the service with the API token as an environment variable or add it using the user interface.
 4. Configure your timing system to send data to the service.
 5. The service will forward your data to racemap.com.
+6. In case of wrong time zones of your local system you can override it.
 
 ## How to run the service
 
@@ -71,3 +72,23 @@ You can change the defaults of the service by overriding the following environme
 | MYLAPS_LISTEN_PORT | 3097                | The port the mylaps service listens on                                                                        |
 | CHRONO_LISTEN_PORT | 3000                | The port the chronotrack service listens on                                                                   |
 | RACEMAP_API_HOST   | https://racemap.com | The host to send the requests to                                                                              |
+
+# Release Notes
+
+## 1.1.3
+
+- overriding of local time zone offset also applies to isotimes received from ChronoTrack now (even ISO timestamps are not in UTC)
+
+## 1.1.2
+
+- userFeedback dialog added
+
+## 1.1.1
+
+- allows overriding of local time zone offset
+
+## 1.1.0
+
+- first working version
+- supports MyLaps
+- supports Chrono Track

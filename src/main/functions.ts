@@ -8,6 +8,7 @@
 import net from 'node:net';
 import { Buffer } from 'node:buffer';
 import type { ExtendedSocket } from '../types';
+import moment from 'moment';
 
 type TArgs = Array<unknown>;
 
@@ -184,3 +185,15 @@ export const printEnvVar = (envVar: { [name: string]: unknown }, isPublic = true
   }
   console.log(now(), 'Log:', `    |-> \x1b[35m${name}\x1b[0m: \x1b[36m${value || '???'}\x1b[0m`);
 };
+
+// we expect the times to be local time
+// so we need to convert them to UTC by subtracting the user defined timezone offset
+// and because it could be something different depending on the time zone awareness of the local system
+// we do the math ourselves
+// Despite that we are optimistic and the default value timeZoneOffsetInHours is the local computer's timezone offset
+// it reads as UTC + timeZoneOffsetInHours
+// e.g. if the local computer is in UTC+2 the timeZoneOffsetInHours is 2
+// so we need to subtract 2 hours to get UTC time
+export function parseTimeToIsoStringWithUserDefinedOffset(dateAndTime: string, format: string, timeZoneOffsetInHours: number): Date {
+  return moment.utc(dateAndTime, format).subtract(timeZoneOffsetInHours, 'hour').toDate();
+}

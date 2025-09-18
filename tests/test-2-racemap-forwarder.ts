@@ -1,3 +1,4 @@
+import { envs } from '../src/main/envs';
 import moment from 'moment';
 import APIClient from '../src/main/api-client';
 import MyLapsForwarder from '../src/main/mylaps/forwarder';
@@ -16,19 +17,14 @@ import {
   processStoredData,
   storeIncomingRawData,
   removeCertainBytesFromBuffer,
+  parseTimeToIsoStringWithUserDefinedOffset,
 } from '../src/main/functions';
 
-const RACEMAP_API_HOST = process.env.RACEMAP_API_HOST ?? 'https://racemap.com';
-const RACEMAP_API_TOKEN = process.env.RACEMAP_API_TOKEN ?? '';
-const LISTEN_MODE = process.env.LISTEN_MODE?.toLocaleLowerCase() ?? 'private';
-const MYLAPS_LISTEN_PORT = Number.parseInt(process.env.MYLAPS_LISTEN_PORT || '3097');
-const CHRONO_LISTEN_PORT = Number.parseInt(process.env.CHRONO_LISTEN_PORT || '3000');
+const apiClient = new APIClient({ authorization: `Bearer ${envs.RACEMAP_API_TOKEN}` });
+const forwarderIPAddress = envs.LISTEN_MODE === 'private' ? '127.0.0.1' : '0.0.0.0';
 
-const apiClient = new APIClient({ authorization: `Bearer ${RACEMAP_API_TOKEN}` });
-const forwarderIPAddress = LISTEN_MODE === 'private' ? '127.0.0.1' : '0.0.0.0';
-
-const hasMyLapsForwarderInstance = !isPortInUse(MYLAPS_LISTEN_PORT);
-const hasChronoTrckForwarderInstance = !isPortInUse(CHRONO_LISTEN_PORT);
+const hasMyLapsForwarderInstance = !isPortInUse(envs.MYLAPS_LISTEN_PORT);
+const hasChronoTrckForwarderInstance = !isPortInUse(envs.CHRONO_LISTEN_PORT);
 
 const shortId001 = shortIdBuilder();
 const times: TPredictionTestTimes = {
@@ -186,37 +182,61 @@ test('Test function removeCertainBytesFromBuffer', (t) => {
   );
 });
 
+test('Test parseTimeToIsoStringWithUserDefinedOffset function with different offsets', (t) => {
+  const timeString = '2025-03-08T16:13:57.417Z';
+  const resultWithZeroOffset = moment.utc(timeString).subtract(0, 'hour').toISOString();
+  const resultWith3HoursOffset = moment.utc(timeString).subtract(3, 'hour').toISOString();
+  const resultWithMinus2HoursOffset = moment.utc(timeString).subtract(-2, 'hour').toISOString();
+
+  const parsedWithZeroOffset = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'YYYY-MM-DDTHH:mm:ss.SSS[Z]', 0).toISOString();
+  t.is(parsedWithZeroOffset, resultWithZeroOffset, `timestamp should be ${resultWithZeroOffset} with offset 0 hours`);
+
+  const parsedWith3HourOffset = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'YYYY-MM-DDTHH:mm:ss.SSS[Z]', 3).toISOString();
+  t.is(parsedWith3HourOffset, resultWith3HoursOffset, `timestamp should be ${resultWith3HoursOffset} with offset 3 hours`);
+
+  const parsedWithMinus2HourOffset = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'YYYY-MM-DDTHH:mm:ss.SSS[Z]', -2).toISOString();
+  t.is(parsedWithMinus2HourOffset, resultWithMinus2HoursOffset, `timestamp should be ${resultWithMinus2HoursOffset} with offset -2 hours`);
+});
+
 test('Test function myLapsLagacyPassingToRead', (t) => {
+  // const legacyPassingString = 'KV8658316:13:57.417 3 0F  1000025030870'
+  const toUTCHoursOffset = new Date().getTimezoneOffset() / -60;
+  const result = moment.utc('2025-03-08T16:13:57.417Z').subtract(toUTCHoursOffset, 'hour').toISOString();
+
   const read = myLapsLagacyPassingToRead('Start', fixtures.myLaps.legacyPassingString);
 
   t.not(read, null, 'read should not be null');
   t.is(read?.chipId, `${MyLapsPrefix}KV86583`, 'chipId should be KV86583');
   t.is(read?.timingId, 'Start', 'timingId should be Start');
   t.is(read?.timingName, 'Start', 'timingName should be Start');
-  t.is(read?.timestamp, '2025-03-08T16:13:57.417Z', 'timestamp should be 2025-03-08T16:13:57.417Z');
+  t.is(read?.timestamp, result, `timestamp should be ${result}`);
 });
 
 test('Test function myLapsPassingToRead', (t) => {
+  // passingString = 't=13:11:30.904|c=0000041|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41',
+  const toUTCHoursOffset = new Date().getTimezoneOffset() / -60;
+  const result = moment.utc('2012-06-06T13:11:30.904Z').subtract(toUTCHoursOffset, 'hour').toISOString();
+
   const read = myLapsPassingToRead('Start001', 'Start', fixtures.myLaps.passingString);
   t.not(read, null, 'read should not be null');
   t.is(read?.chipId, `${MyLapsPrefix}0000041`, 'chipId should be 0000041');
   t.is(read?.timingId, 'Start001', 'timingId should be Start001');
   t.is(read?.timingName, 'Start', 'timingName should be Start');
-  t.is(read?.timestamp, '2012-06-06T13:11:30.904Z', 'timestamp should be 2012-06-06T13:11:30.904Z');
+  t.is(read?.timestamp, result, `timestamp should be ${result}`);
 });
 
 test('Try to spin up an instance of the mylaps forwarder', async (t) => {
-  if (await isPortInUse(MYLAPS_LISTEN_PORT)) {
-    t.log(`Port ${MYLAPS_LISTEN_PORT} is already in use. We do not have to spin a server.`);
+  if (await isPortInUse(envs.MYLAPS_LISTEN_PORT)) {
+    t.log(`Port ${envs.MYLAPS_LISTEN_PORT} is already in use. We do not have to spin a server.`);
     t.pass();
   } else {
-    state.myLaps.forwarder = new MyLapsForwarder(apiClient, MYLAPS_LISTEN_PORT);
+    state.myLaps.forwarder = new MyLapsForwarder(apiClient, envs.MYLAPS_LISTEN_PORT);
     t.not(state.myLaps.forwarder, null, 'instance of MyLapsForwarder is not null');
   }
 });
 
-test(`should connect to tcp://${forwarderIPAddress}:${MYLAPS_LISTEN_PORT}`, async (t) => {
-  state.myLaps.aTCPClient = await connectTcpSocket(forwarderIPAddress, MYLAPS_LISTEN_PORT);
+test(`should connect to tcp://${forwarderIPAddress}:${envs.MYLAPS_LISTEN_PORT}`, async (t) => {
+  state.myLaps.aTCPClient = await connectTcpSocket(forwarderIPAddress, envs.MYLAPS_LISTEN_PORT);
   t.not(state.myLaps.aTCPClient, null, 'tcp client should be not null but is');
   if (state.myLaps.aTCPClient != null) {
     state.myLaps.aTCPClient.sendFrame = (text: string) => {
@@ -425,17 +445,17 @@ test('the server should have responded with AckMarker for the last marker telegr
 });
 
 test('Try to spin up an instance of the chronotrack forwarder', async (t) => {
-  if (await isPortInUse(CHRONO_LISTEN_PORT)) {
-    t.log(`Port ${CHRONO_LISTEN_PORT} is already in use. We do not have to spin a server.`);
+  if (await isPortInUse(envs.CHRONO_LISTEN_PORT)) {
+    t.log(`Port ${envs.CHRONO_LISTEN_PORT} is already in use. We do not have to spin a server.`);
     t.pass();
   } else {
-    state.chronoTrack.forwarder = new ChronoTrackForwarder(apiClient, CHRONO_LISTEN_PORT);
+    state.chronoTrack.forwarder = new ChronoTrackForwarder(apiClient, envs.CHRONO_LISTEN_PORT);
     t.not(state.chronoTrack.forwarder, null, 'instance of ChronoTrackForwarder is not null');
   }
 });
 
-test(`should connect to tcp://${forwarderIPAddress}:${CHRONO_LISTEN_PORT}`, async (t) => {
-  state.chronoTrack.aTCPClient = await connectTcpSocket(forwarderIPAddress, CHRONO_LISTEN_PORT);
+test(`should connect to tcp://${forwarderIPAddress}:${envs.CHRONO_LISTEN_PORT}`, async (t) => {
+  state.chronoTrack.aTCPClient = await connectTcpSocket(forwarderIPAddress, envs.CHRONO_LISTEN_PORT);
   t.not(state.chronoTrack.aTCPClient, null, 'tcp client should be not null but is');
 
   if (state.chronoTrack.aTCPClient != null) {
