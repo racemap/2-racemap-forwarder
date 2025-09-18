@@ -218,7 +218,7 @@ const PlaceholderContainer = styled.div`
   }
 
   &.placeholder-wave {
-    mask-image: linear-gradient(130deg, $black 55%, rgba(0, 0, 0, (1 - 0.2)) 75%, $black 95%);
+    mask-image: linear-gradient(130deg, #000 55%, rgba(0, 0, 0, (1 - 0.2)) 75%, #000 95%);
     mask-size: 200% 100%;
     animation: placeholder-wave 2s linear infinite;
   }
