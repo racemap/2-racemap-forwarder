@@ -8,7 +8,7 @@ import { OneHourInMillis, OneSecondInMillis } from '../src/consts';
 import { myLapsLagacyPassingToRead, myLapsPassingToRead } from '../src/main/mylaps/functions';
 import { ChronoTrackCommands, ChronoTrackFrameTerminator } from '../src/main/chronoTrack/consts';
 import type { TTestState, TTestFixtures, TPredictionTestTimes } from '../src/types';
-import { MyLapsFrameTerminator, MyLapsDataSeparator, MyLapsFunctions, MyLapsIdentifiers, MyLapsPrefix } from '../src/main/mylaps/consts';
+import { MyLapsFrameTerminator, MyLapsDataSeparator, MyLapsFunctions, MyLapsIdentifiers, MyLapsDefaultPrefix } from '../src/main/mylaps/consts';
 import {
   sleep,
   isPortInUse,
@@ -206,7 +206,7 @@ test('Test function myLapsLagacyPassingToRead', (t) => {
   const read = myLapsLagacyPassingToRead('Start', fixtures.myLaps.legacyPassingString);
 
   t.not(read, null, 'read should not be null');
-  t.is(read?.chipId, `${MyLapsPrefix}KV86583`, 'chipId should be KV86583');
+  t.is(read?.chipId, `${MyLapsDefaultPrefix}KV86583`, 'chipId should be KV86583');
   t.is(read?.timingId, 'Start', 'timingId should be Start');
   t.is(read?.timingName, 'Start', 'timingName should be Start');
   t.is(read?.timestamp, result, `timestamp should be ${result}`);
@@ -219,7 +219,7 @@ test('Test function myLapsPassingToRead', (t) => {
 
   const read = myLapsPassingToRead('Start001', 'Start', fixtures.myLaps.passingString);
   t.not(read, null, 'read should not be null');
-  t.is(read?.chipId, `${MyLapsPrefix}0000041`, 'chipId should be 0000041');
+  t.is(read?.chipId, `${MyLapsDefaultPrefix}0000041`, 'chipId should be 0000041');
   t.is(read?.timingId, 'Start001', 'timingId should be Start001');
   t.is(read?.timingName, 'Start', 'timingName should be Start');
   t.is(read?.timestamp, result, `timestamp should be ${result}`);

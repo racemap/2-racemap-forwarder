@@ -23,6 +23,7 @@ import {
   ChronoTrack2RMServiceName,
   ChronoTrackFrameTerminator,
   MAX_MESSAGE_DATA_DELAY_IN_MS,
+  ChronoTrackDefaultPrefix,
 } from './consts';
 
 const logToFileSystem = (message: Buffer | string, fromClient = true) => {
@@ -285,8 +286,8 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
 
       // All ChronoTrack Transponder IDs are prefixed with Chrono_
       // This is to seperate them from Raceresult TransponderIds and common App Ids
-      if (chipId.indexOf('Chrono_') !== 0) {
-        chipId = `Chrono_${chipId}`;
+      if (chipId.indexOf(ChronoTrackDefaultPrefix) !== 0) {
+        chipId = `${ChronoTrackDefaultPrefix}${chipId}`;
       }
 
       const timingRead: TimingRead = {

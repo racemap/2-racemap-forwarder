@@ -1,6 +1,6 @@
 import { ToRacemapForwarderVersion } from '../../version';
 
-export const MyLapsPrefix = 'MyLaps_'; // MyLaps prefix for the transponder or chipIds
+export const MyLapsDefaultPrefix = 'MyLaps_'; // MyLaps prefix for the transponder or chipIds
 
 export const MAX_MESSAGE_DATA_DELAY_IN_MS = 500;
 

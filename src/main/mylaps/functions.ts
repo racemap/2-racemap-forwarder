@@ -1,5 +1,5 @@
 import type { TimingRead } from '../../types';
-import { MyLapsPrefix } from './consts';
+import { MyLapsDefaultPrefix } from './consts';
 import type {
   MyLapsDevice,
   MyLapsMarker,
@@ -16,10 +16,10 @@ import { parseTimeToIsoStringWithUserDefinedOffset } from '../functions';
 
 function prefix(chipId: string): string {
   // When "MyLaps_" is not prepended it should be prepended
-  if (chipId.includes(MyLapsPrefix)) {
+  if (chipId.includes(MyLapsDefaultPrefix)) {
     return chipId;
   }
-  return MyLapsPrefix + chipId;
+  return MyLapsDefaultPrefix + chipId;
 }
 
 //                                                            |> checksum
