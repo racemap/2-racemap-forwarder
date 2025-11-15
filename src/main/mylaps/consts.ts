@@ -1,6 +1,9 @@
 import { ToRacemapForwarderVersion } from '../../version';
+import { envs } from '../envs';
 
-export const MyLapsPrefix = 'MyLaps_'; // MyLaps prefix for the transponder or chipIds
+// MyLaps prefix for the transponder or chipIds
+// can be overrided with env MYLAPS_PREFIX_OVERRIDE
+export const MyLapsDefaultPrefix = envs.MYLAPS_PREFIX_OVERRIDE !== '' ? envs.MYLAPS_PREFIX_OVERRIDE : 'MyLaps_';
 
 export const MAX_MESSAGE_DATA_DELAY_IN_MS = 500;
 

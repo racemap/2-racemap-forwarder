@@ -15,6 +15,7 @@ import {
   MyLaps2RMServiceName,
   MyLapsFrameTerminator,
   MAX_MESSAGE_DATA_DELAY_IN_MS,
+  MyLapsDefaultPrefix,
 } from './consts';
 
 const logToFileSystem = (message: Buffer | string, fromClient = true) => {
@@ -55,6 +56,7 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
       forwardedReads: this._forwardedReads,
       listenHost: this._listenHost,
       listenPort: this._listenPort,
+      forwarderPrefix: MyLapsDefaultPrefix,
       connections,
     };
   };

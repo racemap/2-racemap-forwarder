@@ -197,3 +197,9 @@ export const printEnvVar = (envVar: { [name: string]: unknown }, isPublic = true
 export function parseTimeToIsoStringWithUserDefinedOffset(dateAndTime: string, format: string, timeZoneOffsetInHours: number): Date {
   return moment.utc(dateAndTime, format).subtract(timeZoneOffsetInHours, 'hour').toDate();
 }
+
+export const clearIntervalTimer = (timerHandle: NodeJS.Timeout | null) => {
+  if (timerHandle != null) {
+    clearInterval(timerHandle);
+  }
+};

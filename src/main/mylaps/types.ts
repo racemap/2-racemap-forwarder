@@ -26,6 +26,7 @@ export type MyLapsClientMetadata = {
 export type MyLapsForwarderState = {
   listenHost: string;
   listenPort: number;
+  forwarderPrefix: string;
   forwardedReads: number;
   connections: Array<{
     id: string;

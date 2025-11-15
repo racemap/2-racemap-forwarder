@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import net from 'node:net';
 import _pick from 'lodash/pick';
 import moment from 'moment';
@@ -7,7 +6,17 @@ import type APIClient from '../api-client';
 import type { TimingRead } from '../../types';
 import BaseForwarder from '../base-forwarder';
 import { serverState, updateServerState } from '../state';
-import { error, info, log, parseTimeToIsoStringWithUserDefinedOffset, processStoredData, storeIncomingRawData, success, warn } from '../functions';
+import {
+  clearIntervalTimer,
+  error,
+  info,
+  log,
+  parseTimeToIsoStringWithUserDefinedOffset,
+  processStoredData,
+  storeIncomingRawData,
+  success,
+  warn,
+} from '../functions';
 import {
   type MessageParts,
   ChronoTrackProtocol,
@@ -23,17 +32,9 @@ import {
   ChronoTrack2RMServiceName,
   ChronoTrackFrameTerminator,
   MAX_MESSAGE_DATA_DELAY_IN_MS,
+  ChronoTrackDefaultPrefix,
 } from './consts';
-
-const logToFileSystem = (message: Buffer | string, fromClient = true) => {
-  fs.appendFileSync('./ChronoTrackInputAdapter.log', `${new Date().toISOString()} ${fromClient ? '» from' : '« to  '} client: ${message}\n`);
-};
-
-const clearIntervalTimer = (timerHandle: NodeJS.Timeout | null) => {
-  if (timerHandle != null) {
-    clearInterval(timerHandle);
-  }
-};
+import { logToFileSystem, prefix } from './functions';
 
 class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
   _server: net.Server;
@@ -63,6 +64,7 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
       forwardedReads: this._forwardedReads,
       listenHost: this._listenHost,
       listenPort: this._listenPort,
+      forwarderPrefix: ChronoTrackDefaultPrefix,
       connections,
     };
   };
@@ -283,11 +285,7 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
     const saveRead = (someParts: Array<string>) => {
       let chipId = someParts[3];
 
-      // All ChronoTrack Transponder IDs are prefixed with Chrono_
-      // This is to seperate them from Raceresult TransponderIds and common App Ids
-      if (chipId.indexOf('Chrono_') !== 0) {
-        chipId = `Chrono_${chipId}`;
-      }
+      chipId = prefix(chipId);
 
       const timingRead: TimingRead = {
         chipId, // the transponder registered by the antenna
