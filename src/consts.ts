@@ -20,12 +20,14 @@ export const EmptyServerState: ServerState = {
     listenPort: -1,
     forwardedReads: 0,
     connections: [],
+    forwarderPrefix: '',
   },
   chronoTrackForwarder: {
     listenHost: '',
     listenPort: -1,
     forwardedReads: 0,
     connections: [],
+    forwarderPrefix: '',
   },
 };
 
