@@ -65,7 +65,7 @@ export const MyLapsForwarderDetails = ({ forwarderState }: MyLapsForwarderDetail
     <DetailsContainer>
       <span>
         The table list all connection from any software connected to Port <strong>{forwarderState.listenPort}</strong>. To forward reads from MyLaps
-        connect the exporter and forward all reads.
+        connect the exporter and forward all reads. All tranponder IDs will be prefixed with <strong>{forwarderState.forwarderPrefix}</strong>.
       </span>
       <Table dataSource={data} columns={columns} />
     </DetailsContainer>

@@ -65,13 +65,15 @@ You can checkout the repository and run the service with the following commands.
 
 You can change the defaults of the service by overriding the following environment variables
 
-| Variable           | Default             | Description                                                                                                   |
-| ------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------- |
-| RACEMAP_API_TOKEN  | ''                  | The API Token is required to send data to RACEMAP                                                             |
-| LISTEN_MODE        | private             | The mode the service listens on, can be private or public. private binds to 127.0.0.1 public binds to 0.0.0.0 |
-| MYLAPS_LISTEN_PORT | 3097                | The port the mylaps service listens on                                                                        |
-| CHRONO_LISTEN_PORT | 3000                | The port the chronotrack service listens on                                                                   |
-| RACEMAP_API_HOST   | https://racemap.com | The host to send the requests to                                                                              |
+| Variable               | Default             | Description                                                                                                   |
+| ---------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| RACEMAP_API_TOKEN      | ''                  | The API Token is required to send data to RACEMAP                                                             |
+| LISTEN_MODE            | private             | The mode the service listens on, can be private or public. private binds to 127.0.0.1 public binds to 0.0.0.0 |
+| MYLAPS_LISTEN_PORT     | 3097                | The port the mylaps service listens on                                                                        |
+| MYLAPS_PREFIX_OVERRIDE | 'MyLaps\_'          | Overrides the prefix for all MyLaps transponder IDs when forwarded to racemap.                                |
+| CHRONO_LISTEN_PORT     | 3000                | The port the chronotrack service listens on                                                                   |
+| CHRONO_PREFIX_OVERRIDE | 'Chrono\_'          | Overrides the prefix for all Chrono transponder IDs when forwarded to racemap.                                |
+| RACEMAP_API_HOST       | https://racemap.com | The host to send the requests to                                                                              |
 
 # Release Notes
 
