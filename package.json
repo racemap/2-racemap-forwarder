@@ -1,6 +1,6 @@
 {
   "name": "2-racemap-forwarder",
-  "version": "v1.1.3",
+  "version": "v1.1.4",
   "main": "out/main/index.js",
   "author": "Jens Haupt <jens.haupt@racemap.com> (https://racemap.com)",
   "license": "MIT",
