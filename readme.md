@@ -38,7 +38,15 @@ You could also add the following lines to a start.bat file and run it from there
 
 ```bat
 set RACEMAP_API_TOKEN=your-api-token
-2-racemap-forwarder.exe
+
+# change port below if you want to connect from MyLaps having a diffrent port
+set MYLAPS_LISTEN_PORT=2097
+
+# change port below if you want to connect from ChronoTrack having a diffrent port
+set CHRONO_LISTEN_PORT=3000
+
+# change below location according to zour installation directory
+C:\Users\neptuntriton\AppData\Local\Programs\2-racemap-forwarder\2-racemap-forwarder.exe
 ```
 
 #### Linux
