@@ -135,7 +135,8 @@ export type TTestFixtures = {
     clientName: string;
     trasnponderIds: Array<string>;
     myLapsLocations: Array<MyLapsLocation>;
-    passingString: string;
+    passingStringPassive: string;
+    passingStringActive: string;
     legacyPassingString: string;
   };
   chronoTrack: {

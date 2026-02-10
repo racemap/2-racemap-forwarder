@@ -105,7 +105,8 @@ const fixtures: TTestFixtures = {
         devicesByName: {},
       },
     ],
-    passingString: 't=13:11:30.904|c=0000041|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41',
+    passingStringPassive: 't=13:11:30.904|c=0000041|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41',
+    passingStringActive: 't=13:11:30.904|c=FG29511|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41',
     legacyPassingString: 'KV8658316:13:57.417 3 0F  1000025030870',
   },
   chronoTrack: {
@@ -212,14 +213,27 @@ test('Test function myLapsLagacyPassingToRead', (t) => {
   t.is(read?.timestamp, result, `timestamp should be ${result}`);
 });
 
-test('Test function myLapsPassingToRead', (t) => {
+test('Test function myLapsPassingPassiveToRead', (t) => {
   // passingString = 't=13:11:30.904|c=0000041|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41',
   const toUTCHoursOffset = new Date().getTimezoneOffset() / -60;
   const result = moment.utc('2012-06-06T13:11:30.904Z').subtract(toUTCHoursOffset, 'hour').toISOString();
 
-  const read = myLapsPassingToRead('Start001', 'Start', fixtures.myLaps.passingString);
+  const read = myLapsPassingToRead('Start001', 'Start', fixtures.myLaps.passingStringPassive);
   t.not(read, null, 'read should not be null');
-  t.is(read?.chipId, `${MyLapsDefaultPrefix}0000041`, 'chipId should be 0000041');
+  t.is(read?.chipId, `${MyLapsDefaultPrefix}41`, 'chipId should be 41');
+  t.is(read?.timingId, 'Start001', 'timingId should be Start001');
+  t.is(read?.timingName, 'Start', 'timingName should be Start');
+  t.is(read?.timestamp, result, `timestamp should be ${result}`);
+});
+
+test('Test function myLapsPassingActiveToRead', (t) => {
+  // passingString = 't=13:11:30.904|c=0000041|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41',
+  const toUTCHoursOffset = new Date().getTimezoneOffset() / -60;
+  const result = moment.utc('2012-06-06T13:11:30.904Z').subtract(toUTCHoursOffset, 'hour').toISOString();
+
+  const read = myLapsPassingToRead('Start001', 'Start', fixtures.myLaps.passingStringActive);
+  t.not(read, null, 'read should not be null');
+  t.is(read?.chipId, `${MyLapsDefaultPrefix}FG29511`, 'chipId should be FG29511');
   t.is(read?.timingId, 'Start001', 'timingId should be Start001');
   t.is(read?.timingName, 'Start', 'timingName should be Start');
   t.is(read?.timestamp, result, `timestamp should be ${result}`);

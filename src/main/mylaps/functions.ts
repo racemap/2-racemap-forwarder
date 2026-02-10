@@ -14,12 +14,26 @@ import type {
 import { serverState } from '../state';
 import { parseTimeToIsoStringWithUserDefinedOffset } from '../functions';
 
+// In MyLaps we have
+// - active transponsers using Id's like this  FG29511 or RZ66509 (7 chars)
+// - passive transponders using Id's like this 0000054 (7 digits)
+//
+// When inporting from Race Result all the leading are cutted out in case of the import of starters
+// the following function removes the zeros in case a number from a passive system is transmitted
+
+function removeLeadingZerosWhenNumber(chipId: string): string {
+  if (/^\d+$/.test(chipId)) {
+    return chipId.replace(/^0+/, '') || '0';
+  }
+  return chipId;
+}
+
 function prefix(chipId: string): string {
   // When "MyLaps_" is not prepended it should be prepended
   if (chipId.includes(MyLapsDefaultPrefix)) {
     return chipId;
   }
-  return MyLapsDefaultPrefix + chipId;
+  return MyLapsDefaultPrefix + removeLeadingZerosWhenNumber(chipId);
 }
 
 //                                                            |> checksum
