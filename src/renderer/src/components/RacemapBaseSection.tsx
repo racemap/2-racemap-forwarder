@@ -77,6 +77,7 @@ const RacemapBaseSection = (): React.ReactNode => {
           code
           copyable={{ text: appState.version.label, tooltips: ['Copy version for support', 'Copied'] }}
           title={appState.version.label}
+          style={{ whiteSpace: 'nowrap' }}
         >
           v{appState.version.version} ({appState.version.commit})
         </Typography.Text>
