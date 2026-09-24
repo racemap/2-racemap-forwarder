@@ -8,12 +8,12 @@ import type { UserFeedbackPrototype } from '../types';
 import { appVersion } from './build';
 import ChronoTrackForwarder from './chronoTrack/forwarder';
 import { envs } from './envs';
-import { info, log, prepareLogger } from './functions';
+import { error, info, log, prepareLogger } from './functions';
 import MyLapsForwarder from './mylaps/forwarder';
 import {
-  apiClient,
   createUserFeedback,
   getServerState,
+  outbox,
   prepareServerState,
   saveServerState,
   selectRacemapEvent,
@@ -31,10 +31,11 @@ async function bootup(mainWindow: BrowserWindow) {
   }
 
   prepareLogger(mainWindow.webContents);
-  prepareServerState(envs.RACEMAP_API_TOKEN, mainWindow.webContents);
+  // Not awaited: the token check needs the network, the TCP ports must not wait for it. Reads are queued meanwhile.
+  prepareServerState(envs.RACEMAP_API_TOKEN, mainWindow.webContents).catch((err) => error('Could not load the settings', err));
 
-  new MyLapsForwarder(apiClient, envs.MYLAPS_LISTEN_PORT, envs.LISTEN_MODE === 'private');
-  new ChronoTrackForwarder(apiClient, envs.CHRONO_LISTEN_PORT, envs.LISTEN_MODE === 'private');
+  new MyLapsForwarder(outbox, envs.MYLAPS_LISTEN_PORT, envs.LISTEN_MODE === 'private');
+  new ChronoTrackForwarder(outbox, envs.CHRONO_LISTEN_PORT, envs.LISTEN_MODE === 'private');
 }
 
 const appIcon = {

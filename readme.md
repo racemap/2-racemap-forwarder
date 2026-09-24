@@ -84,7 +84,8 @@ yarn dev
 | `yarn dev` | Runs the app with hot reload |
 | `yarn check` / `yarn fix` | Lint and format with Biome |
 | `yarn typecheck` | TypeScript for main and renderer |
-| `yarn test` | Integration tests against racemap.com (needs `RACEMAP_API_TOKEN`) |
+| `yarn test` | Unit tests (Vitest), also run in CI |
+| `yarn test:live` | Integration tests against racemap.com (needs `RACEMAP_API_TOKEN`) |
 | `yarn build-linux` / `build-win` / `build-mac` | Local binaries in `dist/` |
 
 ## Possible settings

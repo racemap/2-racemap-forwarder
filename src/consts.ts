@@ -7,7 +7,7 @@ export const OneSecondInMillis = 1000; // 1 second in milliseconds
 
 export const EmptyServerState: ServerState = {
   expertMode: false,
-  apiToken: '',
+  apiTokenHint: '',
   apiTokenIsValid: false,
   events: [],
   starters: [],
@@ -15,6 +15,7 @@ export const EmptyServerState: ServerState = {
   user: null,
   version: { ...buildInfo, platform: '', arch: '', os: '', electron: '', label: '' },
   timeZoneOffsetInHours: 0,
+  outbox: { queued: 0, forwarded: 0, rejected: 0, lastError: null, lastForwardedAt: null },
   myLapsForwarder: {
     listenHost: '',
     listenPort: -1,
@@ -31,12 +32,13 @@ export const EmptyServerState: ServerState = {
   },
 };
 
+// Copied from gears shared/utilities/consts/common.ts. Keep in sync.
 export const RacemapColors = {
   CloudBlue: '#ced9e3',
   PaleBlue: '#36739a',
   LightBlue: '#f0f5fa',
   DarkRed: '#721c25',
-  DangerRed: '#dc3545',
+  DangerRed: '#FF4D4F',
   DustRed1: '#fff1f0',
   DustRed2: '#ffccc7',
   BaseRed: '#ff4646',
@@ -54,15 +56,22 @@ export const RacemapColors = {
   PolarGreen2: '#d9f7be',
   LightGray: '#dee2e6',
   LightLightGray: '#f2f2f2',
+  LightLightLightGray: '#fafafa',
   Gray: '#ced4da',
   DarkGray: '#646464',
   DarkYellow: '#d4b106',
   SunriseYellow1: '#feffe6',
   SunriseYellow2: '#ffffb8',
   DarkBlue: '#254a61',
+  Violet: '#7a4fa3',
+  LightViolet: '#f5f0fa',
   LightOrange: '#ffa500',
   LightLightOrange: '#fffcf1',
   Orange: '#b4530a',
   DarkDarkGray: '#202020',
+  GoldenBrown: '#d48806',
   Headline: '#404040',
+  ChartBlue: '#5470c6',
+  ChartGreen: '#91cc75',
+  ChartYellow: '#fac858',
 };

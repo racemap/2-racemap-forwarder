@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import net from 'node:net';
 import shortId from 'shortid';
 import type { LocationUpdate, MessageParts, TimingRead } from '../../types';
-import type APIClient from '../api-client';
 import BaseForwarder from '../base-forwarder';
 import { error, info, log, processStoredData, removeCertainBytesFromBuffer, storeIncomingRawData, success, warn } from '../functions';
-import { updateServerState } from '../state';
+import type { Outbox } from '../outbox';
+import { serverState, updateServerState } from '../state';
 import {
   MAX_MESSAGE_DATA_DELAY_IN_MS,
   MyLaps2RMServiceName,
@@ -31,8 +31,8 @@ const clearIntervalTimer = (timerHandle: NodeJS.Timeout | null) => {
 class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
   _server: net.Server;
 
-  constructor(apiClient: APIClient, listenPort: number, justLocalHost = true) {
-    super(apiClient, listenPort, justLocalHost);
+  constructor(outbox: Outbox, listenPort: number, justLocalHost = true) {
+    super(outbox, listenPort, justLocalHost);
 
     this._server = this._configureReceiverSocket(this._listenPort, this._listenHost);
 
@@ -373,19 +373,16 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
               if (counter > 0) {
                 for (let i = 2; i < len - 2; i++) {
                   const passing = parts[i];
-                  const read = myLapsPassingToRead(locationName, locationName, passing);
+                  const read = myLapsPassingToRead(locationName, locationName, passing, serverState.timeZoneOffsetInHours);
                   if (read != null) {
                     reads.push(read);
                   } else {
                     warn(`${this.className}._handleMessages`, 'Passing message with missing keys received:', passing);
                   }
                 }
+                // Ack only once the reads are on disk: MyLaps never resends an acked passing.
+                this._queueReads(refToSocket, reads);
                 refToSocket.sendData([MyLaps2RMServiceName, MyLapsFunctions.AckPassing, counter.toString()]);
-              }
-              if (reads.length > 0) {
-                this._pushNonlocatedReadToRacemap(reads);
-                refToSocket.forwardedReads += reads.length;
-                this._forwardedReads += reads.length;
               }
             }
 
@@ -411,17 +408,13 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
               const counter = Number.parseInt(parts[len - 2], 10);
               if (counter > 0) {
                 for (let i = 2; i < len - 2; i++) {
-                  const read = myLapsLagacyPassingToRead(locationName, parts[i]);
+                  const read = myLapsLagacyPassingToRead(locationName, parts[i], serverState.timeZoneOffsetInHours);
                   if (read != null) {
                     reads.push(read);
                   }
                 }
               }
-              if (reads.length > 0) {
-                this._pushNonlocatedReadToRacemap(reads);
-                refToSocket.forwardedReads += reads.length;
-                this._forwardedReads += reads.length;
-              }
+              this._queueReads(refToSocket, reads);
               refToSocket.sendData([MyLaps2RMServiceName, MyLapsFunctions.AckStore, counter.toString()]);
             }
             if (refToSocket.meta.locations[locationName] != null) {
@@ -437,7 +430,7 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
               const counter = Number.parseInt(parts[len - 2], 10);
               if (counter > 0) {
                 for (let i = 2; i < len - 2; i++) {
-                  const marker = myLapsMarkerToRead(locationName, parts[i]);
+                  const marker = myLapsMarkerToRead(locationName, parts[i], serverState.timeZoneOffsetInHours);
                   if (marker != null) {
                     markers.push(marker);
                   }
@@ -462,15 +455,10 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
     }
   };
 
-  async _pushNonlocatedReadToRacemap(timingReads: Array<TimingRead>): Promise<void> {
-    // log("tryToPushNonlocatedReadToRacemap", timingReads);
-    const response = await this._apiClient.sendTimingReadsAsJSON(timingReads);
-    if (response.status === 200) {
-      success('tryToPushNonlocatedReadToRacemap', timingReads);
-    } else {
-      warn('tryToPushNonlocatedReadToRacemap', response.status);
-      warn(`|-> reads:${JSON.stringify(timingReads)}`);
-    }
+  _queueReads(refToSocket: MyLapsExtendedSocket, reads: Array<TimingRead>): void {
+    this._outbox.add(reads);
+    refToSocket.forwardedReads += reads.length;
+    this._forwardedReads += reads.length;
   }
 }
 

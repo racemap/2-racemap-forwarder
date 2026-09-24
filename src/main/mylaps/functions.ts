@@ -1,6 +1,5 @@
 import type { TimingRead } from '../../types';
-import { parseTimeToIsoStringWithUserDefinedOffset } from '../functions';
-import { serverState } from '../state';
+import { parseTimeOfDayWithUserDefinedOffset, parseTimeToIsoStringWithUserDefinedOffset } from '../functions';
 import { MyLapsDefaultPrefix } from './consts';
 import type {
   MyLapsDevice,
@@ -30,7 +29,7 @@ function removeLeadingZerosWhenNumber(chipId: string): string {
 
 function prefix(chipId: string): string {
   // When "MyLaps_" is not prepended it should be prepended
-  if (chipId.includes(MyLapsDefaultPrefix)) {
+  if (chipId.startsWith(MyLapsDefaultPrefix)) {
     return chipId;
   }
   return MyLapsDefaultPrefix + removeLeadingZerosWhenNumber(chipId);
@@ -42,7 +41,7 @@ function prefix(chipId: string): string {
 //                       |      |            | |> readerNumber
 //                       |      |> Time      |>  deviceNumber
 //                       |> Transponder Id
-export function myLapsLagacyPassingToRead(locationName: string, passingDetails: string): TimingRead | null {
+export function myLapsLagacyPassingToRead(locationName: string, passingDetails: string, timeZoneOffsetInHours: number): TimingRead | null {
   const passing = passingDetails.trim();
   if (passing.length > 38) {
     // transponderId is the first 7 chars of passingDetails i.e. KV86583
@@ -56,7 +55,7 @@ export function myLapsLagacyPassingToRead(locationName: string, passingDetails: 
       timingId: locationName,
       timingName: locationName,
       // timestamp: moment.utc(`${date} ${time}`, 'YYMMDD hh:mm:ss.SSS').toISOString(),
-      timestamp: parseTimeToIsoStringWithUserDefinedOffset(`${date} ${time}`, 'YYMMDD hh:mm:ss.SSS', serverState.timeZoneOffsetInHours).toISOString(),
+      timestamp: parseTimeToIsoStringWithUserDefinedOffset(`${date} ${time}`, 'YYMMDD hh:mm:ss.SSS', timeZoneOffsetInHours).toISOString(),
       chipId: prefix(transponderId),
     };
     return read;
@@ -66,7 +65,7 @@ export function myLapsLagacyPassingToRead(locationName: string, passingDetails: 
 
 // to parse messages like this
 // Start@Marker@t=11:03:40.347|mt=Gunshot|n=Gunshot 1@4@$
-export function myLapsMarkerToRead(locationName: string, markerDetails: string): TimingRead | null {
+export function myLapsMarkerToRead(locationName: string, markerDetails: string, timeZoneOffsetInHours: number, now = new Date()): TimingRead | null {
   const markerDetailsArray = markerDetails.split('|');
   const marker: MyLapsMarker = {};
   for (const detail of markerDetailsArray) {
@@ -82,7 +81,7 @@ export function myLapsMarkerToRead(locationName: string, markerDetails: string):
   return {
     timingId: locationName,
     // timestamp: moment.utc(marker.time, 'hh:mm:ss.SSS').toISOString(),
-    timestamp: parseTimeToIsoStringWithUserDefinedOffset(marker.time, 'hh:mm:ss.SSS', serverState.timeZoneOffsetInHours).toISOString(),
+    timestamp: parseTimeOfDayWithUserDefinedOffset(marker.time, 'HH:mm:ss.SSS', timeZoneOffsetInHours, now).toISOString(),
     timingName: marker.markerName,
     chipId: '',
   };
@@ -175,7 +174,7 @@ export function myLapsDeviceKeyToName(key: MyLapsDeviceShortKeys): MyLapsDeviceK
 
 // reads stuff like this
 // t=13:11:30.904|c=0000041|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41
-export function myLapsPassingToRead(timingId: string, timingName: string, passingAsString: string): TimingRead | null {
+export function myLapsPassingToRead(timingId: string, timingName: string, passingAsString: string, timeZoneOffsetInHours: number): TimingRead | null {
   const passingDetails = passingAsString.split('|');
 
   const passing: MyLapsPassing = {};
@@ -194,7 +193,7 @@ export function myLapsPassingToRead(timingId: string, timingName: string, passin
       timestamp: parseTimeToIsoStringWithUserDefinedOffset(
         `${passing.date}_${passing.time}`,
         'YYMMDD_hh:mm:ss.SSS',
-        serverState.timeZoneOffsetInHours,
+        timeZoneOffsetInHours,
       ).toISOString(),
     };
   }

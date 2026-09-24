@@ -3,6 +3,7 @@ import type { RacemapEvent, RacemapStarter, RacemapUser, StoredTimingRead, Timin
 import { userAgent } from './build';
 import { envs } from './envs';
 import { error } from './functions';
+import { HttpError } from './outbox';
 
 class APIClient {
   _host = '';
@@ -22,11 +23,12 @@ class APIClient {
 
   async _fetch(path: string, options: RequestInit = {}): Promise<Response> {
     const res = await fetch(`${this._host}${path}`, {
+      signal: AbortSignal.timeout(15_000), // a hung request would stall the outbox
       ...options,
       headers: { ...this._headers, ...options.headers },
     });
     if (!res.ok) {
-      const err = new Error(`Error: ${res.status} ${res.statusText} ${res.url}`);
+      const err = new HttpError(res.status, `${res.status} ${res.statusText} ${res.url}`);
       error('fetch', err);
       throw err;
     }
@@ -63,12 +65,13 @@ class APIClient {
     return res.json();
   }
 
-  async checkToken(): Promise<boolean> {
+  // null means the check itself failed (offline, server error), not that the token is wrong.
+  async checkToken(): Promise<boolean | null> {
     try {
       await this._getJSON('/api/inspect');
       return true;
-    } catch (_err) {
-      return false;
+    } catch (err) {
+      return err instanceof HttpError && [401, 403].includes(err.status) ? false : null;
     }
   }
 

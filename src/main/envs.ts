@@ -15,7 +15,7 @@ const CHRONO_PREFIX_OVERRIDE = process.env.CHRONO_PREFIX_OVERRIDE ?? '';
 const VERSION = buildInfo.version;
 
 printEnvVar({ RACEMAP_API_HOST });
-printEnvVar({ RACEMAP_API_TOKEN });
+printEnvVar({ RACEMAP_API_TOKEN: RACEMAP_API_TOKEN && `…${RACEMAP_API_TOKEN.slice(-4)}` });
 printEnvVar({ LISTEN_MODE });
 printEnvVar({ MYLAPS_LISTEN_PORT });
 printEnvVar({ MYLAPS_PREFIX_OVERRIDE });

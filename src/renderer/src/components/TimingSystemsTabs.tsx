@@ -1,5 +1,6 @@
-import { Tabs, type TabsProps } from 'antd';
+import { Badge, Flex, Tabs, type TabsProps } from 'antd';
 import styled from 'styled-components';
+import { RacemapColors } from '../../../consts';
 import type { ServerState } from '../../../types';
 import { ChronoTrackForwarderDetails } from './ChronoTrackForwarderDetails';
 import { MyLapsForwarderDetails } from './MyLapsForwarderDetails';
@@ -9,24 +10,31 @@ type TimingSystemTabsProps = {
   logLines: Array<string>;
 };
 
+const TabLabel = ({ title, count }: { title: string; count?: number }) => (
+  <Flex gap={8} align="center">
+    {title}
+    {count != null && count > 0 && <Badge count={count} overflowCount={99999} color={RacemapColors.PaleBlue} />}
+  </Flex>
+);
+
 export const TimingSystemTabs = ({ appState, logLines }: TimingSystemTabsProps) => {
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: `From MyLaps ${appState.myLapsForwarder.forwardedReads > 0 ? `(${appState.myLapsForwarder.forwardedReads})` : ''}`,
+      label: <TabLabel title="MyLaps" count={appState.myLapsForwarder.forwardedReads} />,
       children: <MyLapsForwarderDetails forwarderState={appState.myLapsForwarder} />,
     },
     {
       key: '2',
-      label: `From ChronoTrack ${appState.chronoTrackForwarder.forwardedReads > 0 ? `(${appState.chronoTrackForwarder.forwardedReads})` : ''}`,
+      label: <TabLabel title="ChronoTrack" count={appState.chronoTrackForwarder.forwardedReads} />,
       children: <ChronoTrackForwarderDetails forwarderState={appState.chronoTrackForwarder} />,
     },
     {
       key: '3',
-      label: 'From RaceTec',
+      label: <TabLabel title="RaceTec" />,
       children: (
         <>
-          Please contact us if you are using a RaceTec System and want to pend some effort to develop this feature.
+          Please contact us if you use a RaceTec system and would like us to support it.
           <p>
             EMail:<a href="mailto:info@racemap.com">info@racemap.com</a>
           </p>
@@ -35,7 +43,7 @@ export const TimingSystemTabs = ({ appState, logLines }: TimingSystemTabsProps) 
     },
     {
       key: '4',
-      label: 'Log-File',
+      label: <TabLabel title="Log" />,
       children: (
         <LogContainer>
           <pre id="log" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
@@ -46,7 +54,7 @@ export const TimingSystemTabs = ({ appState, logLines }: TimingSystemTabsProps) 
     },
   ];
 
-  return <Tabs defaultActiveKey="1" items={items} />;
+  return <Tabs type="card" size="large" defaultActiveKey="1" items={items} style={{ marginTop: 16 }} />;
 };
 
 const LogContainer = styled.div`

@@ -75,9 +75,17 @@ export type AppVersion = BuildInfo & {
   label: string;
 };
 
+export type OutboxState = {
+  queued: number;
+  forwarded: number;
+  rejected: number;
+  lastError: string | null;
+  lastForwardedAt: string | null;
+};
+
 export type ServerState = {
   expertMode: boolean;
-  apiToken: string | null;
+  apiTokenHint: string; // last 4 characters; the token itself never leaves the main process
   apiTokenIsValid: boolean;
   events: Array<RacemapEvent>;
   starters: Array<RacemapStarter>;
@@ -86,6 +94,7 @@ export type ServerState = {
   version: AppVersion;
   myLapsForwarder: MyLapsForwarderState;
   chronoTrackForwarder: ChronoTrackForwarderState;
+  outbox: OutboxState;
   timeZoneOffsetInHours: number; // defaults to 0 if given any local time this is added to get UTC time
 };
 

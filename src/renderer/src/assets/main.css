@@ -2,9 +2,18 @@
 
 @font-face {
   font-family: 'Cabin Condensed';
-  src: url('./assets/fonts/CabinCondensed-Regular.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
+  src: url('./fonts/CabinCondensed-Regular.woff2') format('woff2');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  src: url('./fonts/CabinCondensed-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  src: url('./fonts/CabinCondensed-Bold.woff2') format('woff2');
+  font-weight: 700;
 }
 
 body {
@@ -17,6 +26,9 @@ body {
 }
 
 h1 {
-  font-size: 4rem;
-  margin-block-end: 0.4em;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+  white-space: nowrap;
 }

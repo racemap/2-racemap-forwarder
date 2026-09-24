@@ -4,7 +4,7 @@ import { Col, Flex, Input, Row, Select, Switch, Typography } from 'antd';
 import React from 'react';
 import { JsonView } from 'react-json-view-lite';
 import styled from 'styled-components';
-import { EmptyServerState } from '../../../consts';
+import { EmptyServerState, RacemapColors } from '../../../consts';
 import type { ServerState } from '../../../types';
 import ExternalLink from './ExternalLink';
 import RacemapIcon from './RacemapIcon';
@@ -12,20 +12,20 @@ import { TimingSystemTabs } from './TimingSystemsTabs';
 
 import 'react-json-view-lite/dist/index.css';
 import { TimeZoneIndicator } from './TimeZoneIndicator';
+import { UploadStatus } from './UploadStatus';
 import { UserFeedback } from './UserFeedback';
 
 const RacemapBaseSection = (): React.ReactNode => {
   const [appState, setAppState] = React.useState<ServerState>(EmptyServerState);
   const [stdout, setStdout] = React.useState<Array<string>>([]);
 
-  const onTokenChange = async (newToken: string) => {
-    const newAppState = {
-      ...appState,
-      apiToken: newToken,
-      apiTokenIsValid: await api.upgradeAPIToken(newToken),
-    };
-    setAppState(newAppState);
-  };
+  // The token never comes back from the main process, so the field only holds what is being typed.
+  const [tokenInput, setTokenInput] = React.useState('');
+  React.useEffect(() => {
+    if (tokenInput.trim() === '') return;
+    const timer = setTimeout(() => api.upgradeAPIToken(tokenInput), 500);
+    return () => clearTimeout(timer);
+  }, [tokenInput]);
 
   const onExpertChange = async () => {
     api.setExpertMode(!appState.expertMode);
@@ -67,21 +67,25 @@ const RacemapBaseSection = (): React.ReactNode => {
 
   return (
     <>
-      <Flex gap={'8px'} justify="start" align="baseline">
+      <Flex gap={16} align="center" style={{ marginBottom: 16, paddingRight: 64 /* room for the feedback button */ }}>
         <ExternalLink href="https://docs.racemap.com/predictive-tracking-with-data-from-timekeeping">
-          <RacemapIcon title="docs.racemap.com/predictive-tracking-with-data-from-timekeeping" style={{ marginRight: '20px' }} />
+          <RacemapIcon scale={0.45} title="docs.racemap.com/predictive-tracking-with-data-from-timekeeping" />
         </ExternalLink>
-
-        <h1>2 RACEMAP Forwarder</h1>
-        <Typography.Text
-          code
-          copyable={{ text: appState.version.label, tooltips: ['Copy version for support', 'Copied'] }}
-          title={appState.version.label}
-          style={{ whiteSpace: 'nowrap' }}
-        >
-          v{appState.version.version} ({appState.version.commit})
-        </Typography.Text>
-        <Switch size="small" title="Toggle expert mode" checked={appState.expertMode} onChange={onExpertChange} />
+        <div>
+          <h1>2 RACEMAP Forwarder</h1>
+          <Typography.Text
+            type="secondary"
+            copyable={{ text: appState.version.label, tooltips: ['Copy version for support', 'Copied'] }}
+            title={appState.version.label}
+            style={{ fontSize: 12, whiteSpace: 'nowrap' }}
+          >
+            v{appState.version.version} ({appState.version.commit})
+          </Typography.Text>
+        </div>
+        <Flex gap={8} align="center" style={{ marginLeft: 'auto' }}>
+          <Typography.Text type="secondary">Expert mode</Typography.Text>
+          <Switch size="small" checked={appState.expertMode} onChange={onExpertChange} />
+        </Flex>
       </Flex>
       <TimeZoneIndicator appState={appState} />
       <HorizontalLine />
@@ -100,18 +104,24 @@ const RacemapBaseSection = (): React.ReactNode => {
           <Flex gap="middle" align="start">
             <Input.Password
               size="large"
-              value={appState?.apiToken ?? ''}
-              placeholder="Paste your API Token here."
+              value={tokenInput}
+              placeholder={
+                appState.apiTokenHint ? `Saved token ${appState.apiTokenHint}. Paste a new one to replace it.` : 'Paste your API Token here.'
+              }
               prefix={<DoubleRightOutlined />}
               iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-              onChange={(e) => onTokenChange(e.target.value)}
+              onChange={(e) => setTokenInput(e.target.value)}
             />
             {appState?.apiTokenIsValid ? (
-              <CheckCircleTwoTone title="Your API Token is valid." twoToneColor="#52c41a" style={{ fontSize: '30px', marginTop: '4px' }} />
+              <CheckCircleTwoTone
+                title="Your API Token is valid."
+                twoToneColor={RacemapColors.BaseGreen}
+                style={{ fontSize: '30px', marginTop: '4px' }}
+              />
             ) : (
               <InfoCircleTwoTone
                 title="Your API Token is invalid. Plese check on racemap.com."
-                twoToneColor="#eb2f96"
+                twoToneColor={RacemapColors.DangerRed}
                 style={{ fontSize: '30px', marginTop: '4px' }}
               />
             )}
@@ -141,7 +151,11 @@ const RacemapBaseSection = (): React.ReactNode => {
               }))}
             />
             {appState?.selectedEvent !== null ? (
-              <CheckCircleTwoTone title="Your API Token is valid." twoToneColor="#52c41a" style={{ fontSize: '30px', marginTop: '4px' }} />
+              <CheckCircleTwoTone
+                title="Your API Token is valid."
+                twoToneColor={RacemapColors.BaseGreen}
+                style={{ fontSize: '30px', marginTop: '4px' }}
+              />
             ) : (
               <InfoCircleTwoTone
                 title="Your API Token is invalid. Plese check on racemap.com."
@@ -173,6 +187,7 @@ const RacemapBaseSection = (): React.ReactNode => {
           </Col>
         )}
       </Row>
+      <UploadStatus outbox={appState.outbox} />
       <TimingSystemTabs appState={appState} logLines={stdout} />
       <UserFeedback user={appState.user} version={appState.version} />
     </>
