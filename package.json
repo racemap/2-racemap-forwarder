@@ -1,6 +1,6 @@
 {
   "name": "2-racemap-forwarder",
-  "version": "1.1.4",
+  "version": "2.0.0",
   "description": "Forwards reads from MyLaps and ChronoTrack timing systems to RACEMAP",
   "main": "out/main/index.js",
   "author": "Jens Haupt <jens.haupt@racemap.com> (https://racemap.com)",
