@@ -1,5 +1,5 @@
 import type { ServerState } from './types';
-import { ToRacemapForwarderVersion } from './version';
+import { buildInfo } from './version';
 
 export const OneHourInMillis = 3600000; // 1 hour in milliseconds
 export const OneMinuteInMillis = 60000; // 1 minute in milliseconds
@@ -13,7 +13,7 @@ export const EmptyServerState: ServerState = {
   starters: [],
   selectedEvent: null,
   user: null,
-  version: ToRacemapForwarderVersion,
+  version: { ...buildInfo, platform: '', arch: '', os: '', electron: '', label: '' },
   timeZoneOffsetInHours: 0,
   myLapsForwarder: {
     listenHost: '',

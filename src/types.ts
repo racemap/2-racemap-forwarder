@@ -1,9 +1,9 @@
 import type net from 'node:net';
-import type MyLapsForwarder from './main/mylaps/forwarder';
 import type ChronoTrackForwarder from './main/chronoTrack/forwarder';
-import type { ServiceVersion } from './version';
 import type { ChronoTrackDevice, ChronoTrackForwarderState } from './main/chronoTrack/types';
+import type MyLapsForwarder from './main/mylaps/forwarder';
 import type { MyLapsDevice, MyLapsForwarderState, MyLapsLocation } from './main/mylaps/types';
+import type { BuildInfo } from './version';
 
 export type UserFeedbackSystemInfo = {
   url: string;
@@ -67,6 +67,14 @@ export type RacemapUser = {
   email: string;
 };
 
+export type AppVersion = BuildInfo & {
+  platform: string;
+  arch: string;
+  os: string;
+  electron: string;
+  label: string;
+};
+
 export type ServerState = {
   expertMode: boolean;
   apiToken: string | null;
@@ -75,7 +83,7 @@ export type ServerState = {
   starters: Array<RacemapStarter>;
   selectedEvent: RacemapEvent | null;
   user: RacemapUser | null;
-  version: ServiceVersion | null;
+  version: AppVersion;
   myLapsForwarder: MyLapsForwarderState;
   chronoTrackForwarder: ChronoTrackForwarderState;
   timeZoneOffsetInHours: number; // defaults to 0 if given any local time this is added to get UTC time

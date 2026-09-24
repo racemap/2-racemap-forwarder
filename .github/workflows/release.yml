@@ -1,0 +1,75 @@
+name: Release
+
+# tools/release/release.sh pushes the tag and creates a draft release. This workflow builds all
+# platforms and publishes the release only when every build is green, so releases/latest always
+# has all binaries. PRs that touch the packaging run the builds without publishing.
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  pull_request:
+    paths: [electron-builder.yml, .github/workflows/release.yml, tools/adhoc-sign.cjs, package.json]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: --win
+          - os: macos-latest
+            target: --mac
+          - os: ubuntu-latest
+            target: --linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: yarn
+      - name: package.json version matches the tag
+        if: github.ref_type == 'tag'
+        run: |
+          echo "BUILD_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          test "$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME#v}"
+      - run: yarn install --immutable
+      - run: yarn build
+      - run: yarn electron-builder ${{ matrix.target }} --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            dist/2-racemap-forwarder-*
+            !dist/*.blockmap
+
+  publish:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: assets
+          merge-multiple: true
+      - run: cd assets && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Create the draft if the tag was pushed by hand
+        run: gh release view "$TAG" > /dev/null || gh release create "$TAG" --draft --verify-tag --generate-notes --title "$TAG"
+      - run: gh release upload "$TAG" assets/* --clobber
+      - run: gh release edit "$TAG" --draft=false --latest

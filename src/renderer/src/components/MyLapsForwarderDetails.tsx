@@ -1,6 +1,6 @@
-import styled from 'styled-components';
 import { Table, Tag } from 'antd';
 import type { MyLapsForwarderState } from 'src/main/mylaps/types';
+import styled from 'styled-components';
 
 type MyLapsForwarderDetailsProps = {
   forwarderState: MyLapsForwarderState;

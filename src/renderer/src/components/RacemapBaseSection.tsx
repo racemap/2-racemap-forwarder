@@ -1,14 +1,14 @@
-import React from 'react';
-import styled from 'styled-components';
-import RacemapIcon from './RacemapIcon';
-import ExternalLink from './ExternalLink';
+import { CheckCircleTwoTone, DoubleRightOutlined, EyeInvisibleOutlined, EyeTwoTone, InfoCircleTwoTone } from '@ant-design/icons';
 import { api } from '@renderer/api';
+import { Col, Flex, Input, Row, Select, Switch, Typography } from 'antd';
+import React from 'react';
 import { JsonView } from 'react-json-view-lite';
-import type { ServerState } from '../../../types';
+import styled from 'styled-components';
 import { EmptyServerState } from '../../../consts';
+import type { ServerState } from '../../../types';
+import ExternalLink from './ExternalLink';
+import RacemapIcon from './RacemapIcon';
 import { TimingSystemTabs } from './TimingSystemsTabs';
-import { Col, Flex, Input, Row, Select, Switch } from 'antd';
-import { EyeTwoTone, InfoCircleTwoTone, CheckCircleTwoTone, DoubleRightOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 
 import 'react-json-view-lite/dist/index.css';
 import { TimeZoneIndicator } from './TimeZoneIndicator';
@@ -73,7 +73,14 @@ const RacemapBaseSection = (): React.ReactNode => {
         </ExternalLink>
 
         <h1>2 RACEMAP Forwarder</h1>
-        <span>{appState.version?.gitTag.split('_')[0]}</span>
+        <Typography.Text
+          code
+          copyable={{ text: appState.version.label, tooltips: ['Copy version for support', 'Copied'] }}
+          title={appState.version.label}
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          v{appState.version.version} ({appState.version.commit})
+        </Typography.Text>
         <Switch size="small" title="Toggle expert mode" checked={appState.expertMode} onChange={onExpertChange} />
       </Flex>
       <TimeZoneIndicator appState={appState} />
@@ -167,7 +174,7 @@ const RacemapBaseSection = (): React.ReactNode => {
         )}
       </Row>
       <TimingSystemTabs appState={appState} logLines={stdout} />
-      <UserFeedback user={appState.user} />
+      <UserFeedback user={appState.user} version={appState.version} />
     </>
   );
 };
