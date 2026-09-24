@@ -1,4 +1,6 @@
-import { Badge, Flex, Tabs, type TabsProps } from 'antd';
+import { FolderOpenOutlined } from '@ant-design/icons';
+import { api } from '@renderer/api';
+import { Badge, Button, Flex, Tabs, type TabsProps } from 'antd';
 import styled from 'styled-components';
 import { RacemapColors } from '../../../consts';
 import type { ServerState } from '../../../types';
@@ -45,11 +47,19 @@ export const TimingSystemTabs = ({ appState, logLines }: TimingSystemTabsProps) 
       key: '4',
       label: <TabLabel title="Log" />,
       children: (
-        <LogContainer>
-          <pre id="log" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-            {logLines.join('\n')}
-          </pre>
-        </LogContainer>
+        <Flex vertical gap={8}>
+          <Flex justify="space-between" align="center">
+            <span>Newest first. The full logs, including the raw MyLaps and ChronoTrack traffic, are in the log folder.</span>
+            <Button icon={<FolderOpenOutlined />} onClick={() => api.openLogFolder()}>
+              Open log folder
+            </Button>
+          </Flex>
+          <LogContainer>
+            <pre id="log" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0 }}>
+              {logLines.join('\n')}
+            </pre>
+          </LogContainer>
+        </Flex>
       ),
     },
   ];

@@ -2,7 +2,7 @@ import net from 'node:net';
 import _pick from 'lodash/pick';
 import shortId from 'shortid';
 import type { TimingRead } from '../../types';
-import BaseForwarder from '../base-forwarder';
+import BaseForwarder, { CLOSED_CONNECTION_TTL_MS } from '../base-forwarder';
 import { clearIntervalTimer, error, info, log, processStoredData, storeIncomingRawData, warn } from '../functions';
 import type { Outbox } from '../outbox';
 import { serverState, updateServerState } from '../state';
@@ -89,6 +89,13 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
       socket.identified = false;
       socket.userId = '';
       socket.cache.buffer = Buffer.alloc(0);
+      // Keep closed connections visible for a while, then drop them so the list and the state stay small.
+      setTimeout(() => {
+        if (this._connections.get(socketId)?.closedAt != null) {
+          this._connections.delete(socketId);
+          this.updateElectronState();
+        }
+      }, CLOSED_CONNECTION_TTL_MS).unref();
     }
   };
 
@@ -129,6 +136,7 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
         clearIntervalTimer(socket.keepAliveTimerHandle);
         clearIntervalTimer(socket.triggerStartTransmissionHandle);
         this._connections.delete(socket.id);
+        this.updateElectronState();
       }
     });
 
@@ -318,8 +326,10 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
         if (parts[3] === ChronoTrackCommands.newlocation) {
           const newLocationName = parts[2];
           refToSocket.sendFrame(ChronoTrackCommands.getlocations);
-          // 1 seconds after we received a new location we trigger the client to start transmitting data
-          refToSocket.triggerStartTransmissionHandle = setInterval(() => {
+          // 1 second after a new location we ask the client once to start transmitting its data.
+          // This used to be an interval that was never cleared and sent `start` every second.
+          clearIntervalTimer(refToSocket.triggerStartTransmissionHandle);
+          refToSocket.triggerStartTransmissionHandle = setTimeout(() => {
             this._triggerStartTransmission(refToSocket, newLocationName);
           }, 1000);
         } else if (parts[3] === ChronoTrackCommands.guntime) {

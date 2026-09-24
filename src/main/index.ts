@@ -9,6 +9,7 @@ import { appVersion } from './build';
 import ChronoTrackForwarder from './chronoTrack/forwarder';
 import { envs } from './envs';
 import { error, info, log, prepareLogger } from './functions';
+import { logsDir } from './log-file';
 import MyLapsForwarder from './mylaps/forwarder';
 import {
   createUserFeedback,
@@ -95,6 +96,10 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.on('ping', () => console.log('pong'));
+
+  ipcMain.handle('openLogFolder', async () => {
+    await shell.openPath(logsDir);
+  });
 
   ipcMain.handle('callExternalLink', async (_invokeEvent, url) => {
     await shell.openExternal(url);

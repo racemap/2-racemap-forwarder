@@ -41,24 +41,22 @@ const api = {
     return ipcRenderer.invoke('selectRacemapEvent', ...params);
   },
 
+  openLogFolder(): Promise<void> {
+    return ipcRenderer.invoke('openLogFolder');
+  },
+
+  // Both return the function that unsubscribes. removeListener(callback) could never work, because
+  // ipcRenderer holds the wrapper, not the callback, so StrictMode doubled every listener.
   onServerStateChange: (callback: (serverState: ServerState) => void) => {
-    ipcRenderer.on('onServerStateChange', (_event, serverState: ServerState) => {
-      callback(serverState);
-    });
+    const listener = (_event: Electron.IpcRendererEvent, serverState: ServerState) => callback(serverState);
+    ipcRenderer.on('onServerStateChange', listener);
+    return () => ipcRenderer.removeListener('onServerStateChange', listener);
   },
 
-  removeServerStateChangeListener: (callback) => {
-    ipcRenderer.removeListener('onServerStateChange', callback);
-  },
-
-  onNewStdOutLine: (callback: (serverState: string) => void) => {
-    ipcRenderer.on('onNewStdOutLine', (_event, line: string) => {
-      callback(line);
-    });
-  },
-
-  removeOnNewStdOutLineListener: (callback) => {
-    ipcRenderer.removeListener('onNewStdOutLine', callback);
+  onNewStdOutLines: (callback: (lines: Array<string>) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, lines: Array<string>) => callback(lines);
+    ipcRenderer.on('onNewStdOutLines', listener);
+    return () => ipcRenderer.removeListener('onNewStdOutLines', listener);
   },
 };
 

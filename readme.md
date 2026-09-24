@@ -43,7 +43,7 @@ The app is not notarized by Apple yet. On the first start, right-click the app a
 
 #### Windows
 
-Please make shure that you excute the binary from a folder with write access, otherwise the application will not be able to create the log file.
+Logs are written to `%APPDATA%\2-racemap-forwarder\logs` (macOS: `~/Library/Logs/2-racemap-forwarder`, Linux: `~/.config/2-racemap-forwarder/logs`). The **Log** tab has a button that opens the folder.
 
 You could also add the following lines to a start.bat file and run it from there. Then you can double click the start.bat file to run the service.
 
