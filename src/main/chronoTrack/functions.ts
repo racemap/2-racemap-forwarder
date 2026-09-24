@@ -1,6 +1,6 @@
-import fs from 'node:fs';
 import moment from 'moment';
 import { parseTimeOfDayWithUserDefinedOffset, parseTimeToIsoStringWithUserDefinedOffset } from '../functions';
+import { createLogFile } from '../log-file';
 import { ChronoTrackDefaultPrefix } from './consts';
 
 // All ChronoTrack Transponder IDs are prefixed with Chrono_
@@ -24,6 +24,7 @@ export function chronoTrackTimeToDate(timeString: string, timeFormat: string, ti
   }
 }
 
+const rawLog = createLogFile('ChronoTrackInputAdapter');
 export const logToFileSystem = (message: Buffer | string, fromClient = true) => {
-  fs.appendFileSync('./ChronoTrackInputAdapter.log', `${new Date().toISOString()} ${fromClient ? '» from' : '« to  '} client: ${message}\n`);
+  rawLog(`${new Date().toISOString()} ${fromClient ? '» from' : '« to  '} client: ${message}`);
 };

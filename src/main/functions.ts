@@ -9,6 +9,8 @@ import { Buffer } from 'node:buffer';
 import net from 'node:net';
 import moment from 'moment';
 import type { ExtendedSocket } from '../types';
+import { appVersion } from './build';
+import { createLogFile, stripAnsi } from './log-file';
 
 type TArgs = Array<unknown>;
 
@@ -105,12 +107,23 @@ export const now = (): string => {
   return new Date().toISOString().split('T')[1].split('Z')[0];
 };
 
+const appLog = createLogFile('2-racemap-forwarder', { header: () => `=== ${appVersion.label} on ${appVersion.os} ===` });
+
+// Lines reach the renderer in batches, at most 4 times a second, however busy the timing system is.
+let pendingLines: Array<string> = [];
+let _flushTimer: NodeJS.Timeout | null = null;
+
 const internal = (...args: TArgs): void => {
   console.log(...args);
+  const formatted = stripAnsi(args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg))).join(' '));
+  appLog(formatted);
   if (refToElectronWebContents != null) {
-    const formatted = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg))).join(' ');
-
-    refToElectronWebContents.send('onNewStdOutLine', formatted);
+    pendingLines.push(formatted);
+    _flushTimer ??= setTimeout(() => {
+      refToElectronWebContents?.send('onNewStdOutLines', pendingLines);
+      pendingLines = [];
+      _flushTimer = null;
+    }, 250);
   }
 };
 
@@ -183,7 +196,7 @@ export const printEnvVar = (envVar: { [name: string]: unknown }, isPublic = true
     name = Object.keys(envVar)[0];
     value = isPublic ? Object.values(envVar)[0] : '***';
   }
-  console.log(now(), 'Log:', `    |-> \x1b[35m${name}\x1b[0m: \x1b[36m${value || '???'}\x1b[0m`);
+  internal(now(), 'Log:', `    |-> \x1b[35m${name}\x1b[0m: \x1b[36m${value || '???'}\x1b[0m`);
 };
 
 // we expect the times to be local time

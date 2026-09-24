@@ -1,5 +1,7 @@
 import type { Outbox } from './outbox';
 
+export const CLOSED_CONNECTION_TTL_MS = 5 * 60 * 1000;
+
 class BaseForwarder<SocketType> {
   _connections: Map<string, SocketType> = new Map();
   _listenHost: string;

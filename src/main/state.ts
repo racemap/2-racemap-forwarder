@@ -55,8 +55,14 @@ export const outbox = new Outbox({
 
 const tokenHint = (token: string) => (token === '' ? '' : `…${token.slice(-4)}`);
 
+// At most 4 state pushes per second; each one carries the latest state.
+let stateTimer: NodeJS.Timeout | null = null;
 function triggerStateChange(): void {
-  refToElectronWebContents?.send('onServerStateChange', serverState);
+  if (stateTimer) return;
+  stateTimer = setTimeout(() => {
+    stateTimer = null;
+    refToElectronWebContents?.send('onServerStateChange', serverState);
+  }, 250);
 }
 
 export function updateServerState(newState: Partial<ServerState>): void {
