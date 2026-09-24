@@ -1,8 +1,8 @@
 import { Tabs, type TabsProps } from 'antd';
-import type { ServerState } from '../../../types';
-import { MyLapsForwarderDetails } from './MyLapsForwarderDetails';
 import styled from 'styled-components';
+import type { ServerState } from '../../../types';
 import { ChronoTrackForwarderDetails } from './ChronoTrackForwarderDetails';
+import { MyLapsForwarderDetails } from './MyLapsForwarderDetails';
 
 type TimingSystemTabsProps = {
   appState: ServerState;

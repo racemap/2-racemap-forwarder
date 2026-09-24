@@ -1,28 +1,29 @@
-import winIcon from '../../resources/icons/icon.ico?asset';
-import macIcon from '../../resources/icons/icon.icns?asset';
-import linuxIcon from '../../resources/icons/128x128.png?asset';
-import MyLapsForwarder from './mylaps/forwarder';
 import { join } from 'node:path';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { electronApp, is, optimizer } from '@electron-toolkit/utils';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import linuxIcon from '../../resources/icons/128x128.png?asset';
+import macIcon from '../../resources/icons/icon.icns?asset';
+import winIcon from '../../resources/icons/icon.ico?asset';
+import type { UserFeedbackPrototype } from '../types';
+import { appVersion } from './build';
+import ChronoTrackForwarder from './chronoTrack/forwarder';
+import { envs } from './envs';
 import { info, log, prepareLogger } from './functions';
+import MyLapsForwarder from './mylaps/forwarder';
 import {
   apiClient,
-  setExpertMode,
-  getServerState,
-  saveServerState,
-  upgradeAPIToken,
-  prepareServerState,
-  selectRacemapEvent,
   createUserFeedback,
+  getServerState,
+  prepareServerState,
+  saveServerState,
+  selectRacemapEvent,
+  setExpertMode,
   setUserTimezoneOffset,
+  upgradeAPIToken,
 } from './state';
-import ChronoTrackForwarder from './chronoTrack/forwarder';
-import { UserFeedbackPrototype } from '../types';
-import { envs } from './envs';
 
 async function bootup(mainWindow: BrowserWindow) {
-  log('Hello from 2-racemap-forwarder');
+  log(`Hello from ${appVersion.label} on ${appVersion.os}`);
 
   info('Check LISTEN_MODE');
   if (!['private', 'public'].includes(envs.LISTEN_MODE)) {

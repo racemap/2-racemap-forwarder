@@ -1,18 +1,18 @@
 import type { TimingRead } from '../../types';
+import { parseTimeToIsoStringWithUserDefinedOffset } from '../functions';
+import { serverState } from '../state';
 import { MyLapsDefaultPrefix } from './consts';
 import type {
   MyLapsDevice,
-  MyLapsMarker,
-  MyLapsPassing,
   MyLapsDeviceKeys,
-  MyLapsMarkerKeys,
-  MyLapsPassingKeys,
   MyLapsDeviceShortKeys,
+  MyLapsMarker,
+  MyLapsMarkerKeys,
   MyLapsMarkerShortKeys,
+  MyLapsPassing,
+  MyLapsPassingKeys,
   MyLapsPassingShortKeys,
 } from './types';
-import { serverState } from '../state';
-import { parseTimeToIsoStringWithUserDefinedOffset } from '../functions';
 
 // In MyLaps we have
 // - active transponsers using Id's like this  FG29511 or RZ66509 (7 chars)

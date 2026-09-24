@@ -1,6 +1,6 @@
-import styled from 'styled-components';
 import { Table, Tag } from 'antd';
 import type { ChronoTrackForwarderState } from 'src/main/chronoTrack/types';
+import styled from 'styled-components';
 
 type ChronoTrackForwarderDetailsProps = {
   forwarderState: ChronoTrackForwarderState;

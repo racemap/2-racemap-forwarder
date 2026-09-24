@@ -1,22 +1,22 @@
 import fs from 'node:fs';
 import net from 'node:net';
 import shortId from 'shortid';
-import BaseForwarder from '../base-forwarder';
+import type { LocationUpdate, MessageParts, TimingRead } from '../../types';
 import type APIClient from '../api-client';
+import BaseForwarder from '../base-forwarder';
+import { error, info, log, processStoredData, removeCertainBytesFromBuffer, storeIncomingRawData, success, warn } from '../functions';
 import { updateServerState } from '../state';
-import type { TimingRead, MessageParts, LocationUpdate } from '../../types';
-import type { MyLapsDevice, MyLapsExtendedSocket, MyLapsForwarderState, MyLapsLocation } from './types';
-import { myLapsDeviceToObject, myLapsLagacyPassingToRead, myLapsMarkerToRead, myLapsPassingToRead } from './functions';
-import { log, info, warn, error, success, processStoredData, storeIncomingRawData, removeCertainBytesFromBuffer } from '../functions';
 import {
+  MAX_MESSAGE_DATA_DELAY_IN_MS,
+  MyLaps2RMServiceName,
+  MyLapsDataSeparator,
+  MyLapsDefaultPrefix,
+  MyLapsFrameTerminator,
   MyLapsFunctions,
   MyLapsIdentifiers,
-  MyLapsDataSeparator,
-  MyLaps2RMServiceName,
-  MyLapsFrameTerminator,
-  MAX_MESSAGE_DATA_DELAY_IN_MS,
-  MyLapsDefaultPrefix,
 } from './consts';
+import { myLapsDeviceToObject, myLapsLagacyPassingToRead, myLapsMarkerToRead, myLapsPassingToRead } from './functions';
+import type { MyLapsDevice, MyLapsExtendedSocket, MyLapsForwarderState, MyLapsLocation } from './types';
 
 const logToFileSystem = (message: Buffer | string, fromClient = true) => {
   fs.appendFileSync('./MyLapsInputAdapter.log', `${new Date().toISOString()} ${fromClient ? '» from' : '« to  '} client: ${message}\n`);
@@ -369,7 +369,7 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
             const locationName = parts[0];
             if (len > 4) {
               const reads: Array<TimingRead> = [];
-              const counter = Number.parseInt(parts[len - 2]);
+              const counter = Number.parseInt(parts[len - 2], 10);
               if (counter > 0) {
                 for (let i = 2; i < len - 2; i++) {
                   const passing = parts[i];
@@ -408,7 +408,7 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
             const locationName = parts[0];
             if (len > 4) {
               const reads: Array<TimingRead> = [];
-              const counter = Number.parseInt(parts[len - 2]);
+              const counter = Number.parseInt(parts[len - 2], 10);
               if (counter > 0) {
                 for (let i = 2; i < len - 2; i++) {
                   const read = myLapsLagacyPassingToRead(locationName, parts[i]);
@@ -434,7 +434,7 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
             const locationName = parts[0];
             if (len > 4) {
               const markers: Array<TimingRead> = [];
-              const counter = Number.parseInt(parts[len - 2]);
+              const counter = Number.parseInt(parts[len - 2], 10);
               if (counter > 0) {
                 for (let i = 2; i < len - 2; i++) {
                   const marker = myLapsMarkerToRead(locationName, parts[i]);

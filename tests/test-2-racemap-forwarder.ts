@@ -1,29 +1,29 @@
-import { envs } from '../src/main/envs';
-import moment from 'moment';
-import APIClient from '../src/main/api-client';
-import MyLapsForwarder from '../src/main/mylaps/forwarder';
-import ChronoTrackForwarder from '../src/main/chronoTrack/forwarder';
 import { serial as test } from 'ava';
+import moment from 'moment';
 import { OneHourInMillis, OneSecondInMillis } from '../src/consts';
-import { myLapsLagacyPassingToRead, myLapsPassingToRead } from '../src/main/mylaps/functions';
+import APIClient from '../src/main/api-client';
 import { ChronoTrackCommands, ChronoTrackFrameTerminator } from '../src/main/chronoTrack/consts';
-import type { TTestState, TTestFixtures, TPredictionTestTimes } from '../src/types';
-import { MyLapsFrameTerminator, MyLapsDataSeparator, MyLapsFunctions, MyLapsIdentifiers, MyLapsDefaultPrefix } from '../src/main/mylaps/consts';
+import ChronoTrackForwarder from '../src/main/chronoTrack/forwarder';
+import { envs } from '../src/main/envs';
 import {
-  sleep,
-  isPortInUse,
-  shortIdBuilder,
   connectTcpSocket,
-  processStoredData,
-  storeIncomingRawData,
-  removeCertainBytesFromBuffer,
+  isPortInUse,
   parseTimeToIsoStringWithUserDefinedOffset,
+  processStoredData,
+  removeCertainBytesFromBuffer,
+  shortIdBuilder,
+  sleep,
+  storeIncomingRawData,
 } from '../src/main/functions';
+import { MyLapsDataSeparator, MyLapsDefaultPrefix, MyLapsFrameTerminator, MyLapsFunctions, MyLapsIdentifiers } from '../src/main/mylaps/consts';
+import MyLapsForwarder from '../src/main/mylaps/forwarder';
+import { myLapsLagacyPassingToRead, myLapsPassingToRead } from '../src/main/mylaps/functions';
+import type { TPredictionTestTimes, TTestFixtures, TTestState } from '../src/types';
 
 const apiClient = new APIClient({ authorization: `Bearer ${envs.RACEMAP_API_TOKEN}` });
 const forwarderIPAddress = envs.LISTEN_MODE === 'private' ? '127.0.0.1' : '0.0.0.0';
 
-const hasMyLapsForwarderInstance = !isPortInUse(envs.MYLAPS_LISTEN_PORT);
+const _hasMyLapsForwarderInstance = !isPortInUse(envs.MYLAPS_LISTEN_PORT);
 const hasChronoTrckForwarderInstance = !isPortInUse(envs.CHRONO_LISTEN_PORT);
 
 const shortId001 = shortIdBuilder();
@@ -283,7 +283,7 @@ test(`should connect to tcp://${forwarderIPAddress}:${envs.MYLAPS_LISTEN_PORT}`,
           const parts = messageStr.split(MyLapsDataSeparator);
           const len = parts.length;
           if (len > 2) {
-            const serverName = parts[0];
+            const _serverName = parts[0];
             const myLabsFunction = parts[1];
 
             switch (myLabsFunction) {

@@ -5,10 +5,10 @@
  * @param maxMessageDataDelayInMilis
  */
 
-import net from 'node:net';
 import { Buffer } from 'node:buffer';
-import type { ExtendedSocket } from '../types';
+import net from 'node:net';
 import moment from 'moment';
+import type { ExtendedSocket } from '../types';
 
 type TArgs = Array<unknown>;
 

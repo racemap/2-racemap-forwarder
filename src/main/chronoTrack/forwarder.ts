@@ -2,10 +2,9 @@ import net from 'node:net';
 import _pick from 'lodash/pick';
 import moment from 'moment';
 import shortId from 'shortid';
-import type APIClient from '../api-client';
 import type { TimingRead } from '../../types';
+import type APIClient from '../api-client';
 import BaseForwarder from '../base-forwarder';
-import { serverState, updateServerState } from '../state';
 import {
   clearIntervalTimer,
   error,
@@ -17,24 +16,25 @@ import {
   success,
   warn,
 } from '../functions';
+import { serverState, updateServerState } from '../state';
 import {
-  type MessageParts,
-  ChronoTrackProtocol,
+  ChronoTrack2RMServiceName,
+  ChronoTrackCommands,
+  ChronoTrackDefaultPrefix,
+  ChronoTrackFeatures,
+  ChronoTrackFrameTerminator,
+  ChronoTrackWelcomeMessage,
+  MAX_MESSAGE_DATA_DELAY_IN_MS,
+  SUPPORTED_PROTOCOL,
+} from './consts';
+import { logToFileSystem, prefix } from './functions';
+import {
   type ChronoTrackDevice,
   type ChronoTrackExtendedSocket,
   type ChronoTrackForwarderState,
+  ChronoTrackProtocol,
+  type MessageParts,
 } from './types';
-import {
-  SUPPORTED_PROTOCOL,
-  ChronoTrackCommands,
-  ChronoTrackFeatures,
-  ChronoTrackWelcomeMessage,
-  ChronoTrack2RMServiceName,
-  ChronoTrackFrameTerminator,
-  MAX_MESSAGE_DATA_DELAY_IN_MS,
-  ChronoTrackDefaultPrefix,
-} from './consts';
-import { logToFileSystem, prefix } from './functions';
 
 class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
   _server: net.Server;

@@ -1,43 +1,52 @@
 appId: com.2-racemap-forwarder
 productName: 2-racemap-forwarder
 directories:
-  buildResources: build
+  output: dist
+# Only the bundled app. Production node_modules are added by electron-builder.
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - out/**
+  - resources/icons/**
+  - package.json
 asarUnpack:
   - resources/**
+npmRebuild: false
+publish: null
+afterPack: tools/adhoc-sign.cjs
+
+# Asset names carry no version, so releases/latest/download/<name> links never break.
 win:
   executableName: 2-racemap-forwarder
-nsis:
-  artifactName: ${name}-${version}-setup.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
-mac:
-  entitlementsInherit: build/entitlements.mac.plist
-  extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
-dmg:
-  artifactName: ${name}-${version}.${ext}
-linux:
+  icon: resources/icons/icon.ico
   target:
-    - AppImage
-    - snap
-    - deb
-  maintainer: electronjs.org
+    - target: nsis
+      arch: x64
+    - target: portable
+      arch: x64
+nsis:
+  artifactName: 2-racemap-forwarder-win-${arch}-setup.${ext}
+  shortcutName: 2 RACEMAP Forwarder
+  uninstallDisplayName: 2 RACEMAP Forwarder
+  createDesktopShortcut: always
+portable:
+  artifactName: 2-racemap-forwarder-win-${arch}-portable.${ext}
+
+mac:
+  icon: resources/icons/icon.icns
+  category: public.app-category.utilities
+  artifactName: 2-racemap-forwarder-mac-${arch}.${ext}
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  identity: null # signed ad-hoc in tools/adhoc-sign.cjs until there is a Developer ID
+  notarize: false
+
+linux:
+  icon: resources/icons
   category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
-npmRebuild: false
-publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  maintainer: RACEMAP <info@racemap.com>
+  artifactName: 2-racemap-forwarder-linux-x64.${ext}
+  target:
+    - target: AppImage
+      arch: x64
+    - target: deb
+      arch: x64

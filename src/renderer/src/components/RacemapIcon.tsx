@@ -14,8 +14,8 @@ const RacemapIcon = ({ scale = 1.0, title = 'RACEMAP Icon', style }: Props) => (
       xmlSpace="preserve"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <defs id="defs2" />
       <title id="title2">{title}</title>
+      <defs id="defs2" />
       <g id="layer1" transform="translate(-26.778503,-39.808555) ">
         <path
           style={{

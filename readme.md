@@ -24,11 +24,22 @@ The service also manages the communication with the MyLaps|ChronoTrack software.
 
 ### I just want to use the service
 
-You can download the latest binary for your platform from the here and run it with the following commands.
+Download the latest version for your system:
 
-- [2-racemap-forwarder-win-x64-v1.1.3.exe](https://github.com/racemap/2-racemap-forwarder/releases/download/v1.1.3/2-racemap-forwarder-win-x64-v1.1.3.exe)
-- [2-racemap-forwarder-1.1.3.AppImage](https://github.com/racemap/2-racemap-forwarder/releases/download/v1.1.3/2-racemap-forwarder-1.1.3.AppImage)
-- [2-racemap-forwarder_1.1.3_amd64.deb](https://github.com/racemap/2-racemap-forwarder/releases/download/v1.1.3/2-racemap-forwarder_1.1.3_amd64.deb)
+| System | Download |
+| --- | --- |
+| Windows (installer) | [2-racemap-forwarder-win-x64-setup.exe](https://github.com/racemap/2-racemap-forwarder/releases/latest/download/2-racemap-forwarder-win-x64-setup.exe) |
+| Windows (portable, no install) | [2-racemap-forwarder-win-x64-portable.exe](https://github.com/racemap/2-racemap-forwarder/releases/latest/download/2-racemap-forwarder-win-x64-portable.exe) |
+| macOS (Apple Silicon) | [2-racemap-forwarder-mac-arm64.dmg](https://github.com/racemap/2-racemap-forwarder/releases/latest/download/2-racemap-forwarder-mac-arm64.dmg) |
+| macOS (Intel) | [2-racemap-forwarder-mac-x64.dmg](https://github.com/racemap/2-racemap-forwarder/releases/latest/download/2-racemap-forwarder-mac-x64.dmg) |
+| Linux (AppImage) | [2-racemap-forwarder-linux-x64.AppImage](https://github.com/racemap/2-racemap-forwarder/releases/latest/download/2-racemap-forwarder-linux-x64.AppImage) |
+| Linux (deb) | [2-racemap-forwarder-linux-x64.deb](https://github.com/racemap/2-racemap-forwarder/releases/latest/download/2-racemap-forwarder-linux-x64.deb) |
+
+Checksums are in `SHA256SUMS.txt` on the [release page](https://github.com/racemap/2-racemap-forwarder/releases/latest). The version you are running is shown next to the title. Click the copy icon and paste it when you contact support.
+
+#### macOS
+
+The app is not notarized by Apple yet. On the first start, right-click the app and choose **Open**, then confirm. On macOS 15 and newer go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
 #### Windows
 
@@ -58,16 +69,23 @@ export RACEMAP_API_TOKEN=your-api-token
 
 ### I know what I am doing
 
-You can checkout the repository and run the service with the following commands. (requires nodejs 18 and yarn 4 to be installed)
+You need Node.js 22 and Yarn 4 (`corepack enable`).
 
 ```bash
-  git clone git@github.com:racemap/mylaps-to-racemap-forwarder.git
-  cd 2-racemap-forwarder
-  yarn install
-  touch .env
-  sed -i '/^RACEMAP_API_TOKEN=/d' .env && echo "RACEMAP_API_TOKEN=your-api-token" >> .env
-  yarn start
+git clone git@github.com:racemap/2-racemap-forwarder.git
+cd 2-racemap-forwarder
+yarn install
+echo "RACEMAP_API_TOKEN=your-api-token" >> .env
+yarn dev
 ```
+
+| Command | What it does |
+| --- | --- |
+| `yarn dev` | Runs the app with hot reload |
+| `yarn check` / `yarn fix` | Lint and format with Biome |
+| `yarn typecheck` | TypeScript for main and renderer |
+| `yarn test` | Integration tests against racemap.com (needs `RACEMAP_API_TOKEN`) |
+| `yarn build-linux` / `build-win` / `build-mac` | Local binaries in `dist/` |
 
 ## Possible settings
 
@@ -83,22 +101,16 @@ You can change the defaults of the service by overriding the following environme
 | CHRONO_PREFIX_OVERRIDE | 'Chrono\_'          | Overrides the prefix for all Chrono transponder IDs when forwarded to racemap.                                |
 | RACEMAP_API_HOST       | https://racemap.com | The host to send the requests to                                                                              |
 
-# Release Notes
+# Releases
 
-## 1.1.3
+Release notes are on the [releases page](https://github.com/racemap/2-racemap-forwarder/releases). Versions follow [semver](https://semver.org): `vMAJOR.MINOR.PATCH`.
 
-- overriding of local time zone offset also applies to isotimes received from ChronoTrack now (even ISO timestamps are not in UTC)
+To cut a release from an up-to-date `main`:
 
-## 1.1.2
+```bash
+./tools/release/release.sh            # patch: v1.2.0 -> v1.2.1
+./tools/release/release.sh --minor    # v1.2.1 -> v1.3.0
+./tools/release/release.sh --dry-run  # show what would happen
+```
 
-- userFeedback dialog added
-
-## 1.1.1
-
-- allows overriding of local time zone offset
-
-## 1.1.0
-
-- first working version
-- supports MyLaps
-- supports Chrono Track
+The script bumps `package.json`, tags and pushes, and creates a draft release with AI-written notes that you review in your editor. The tag starts the [release workflow](.github/workflows/release.yml), which builds Windows, macOS and Linux and publishes the release when all builds are green.
