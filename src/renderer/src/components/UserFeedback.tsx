@@ -1,13 +1,13 @@
-import { Flex, FloatButton, Input, Modal, message } from 'antd';
-import { CSSProperties, FC, Suspense, useState } from 'react';
-import { UAParser } from 'ua-parser-js';
-import classNames from 'classnames';
-import { IconCommentDots, IconExclamationTriangle } from '../components/Icon';
 import { api } from '@renderer/api';
-import { RacemapUser, UserFeedbackPrototype } from 'src/types';
+import { Flex, FloatButton, Input, Modal, message } from 'antd';
+import classNames from 'classnames';
+import { type CSSProperties, type FC, Suspense, useState } from 'react';
+import type { RacemapUser, UserFeedbackPrototype } from 'src/types';
 import styled from 'styled-components';
+import { UAParser } from 'ua-parser-js';
 import { RacemapColors } from '../../../consts';
 import { isNotEmptyString } from '../../../functions';
+import { IconCommentDots, IconExclamationTriangle } from '../components/Icon';
 import { ErrorBoundary } from './ErrorBoundary';
 
 const { TextArea } = Input;

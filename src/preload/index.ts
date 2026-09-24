@@ -1,8 +1,15 @@
-import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
+import { contextBridge, ipcRenderer } from 'electron';
+import type {
+  callExternalLink,
+  createUserFeedback,
+  getServerState,
+  selectRacemapEvent,
+  setExpertMode,
+  setUserTimezoneOffset,
+  upgradeAPIToken,
+} from '../main/state';
 import type { ServerState, UserFeedbackPrototype } from '../types';
-import type { getServerState, selectRacemapEvent, setExpertMode, setUserTimezoneOffset, createUserFeedback } from '../main/state';
-import type { callExternalLink, upgradeAPIToken } from '../main/state';
 
 // Custom APIs for renderer
 const api = {
@@ -68,8 +75,6 @@ if (process.contextIsolated) {
     console.error(error);
   }
 } else {
-  // @ts-ignore (define in dts)
   window.electron = electronAPI;
-  // @ts-ignore (define in dts)
   window.api = api;
 }

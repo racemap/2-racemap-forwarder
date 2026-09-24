@@ -1,14 +1,14 @@
-import React from 'react';
-import styled from 'styled-components';
-import RacemapIcon from './RacemapIcon';
-import ExternalLink from './ExternalLink';
+import { CheckCircleTwoTone, DoubleRightOutlined, EyeInvisibleOutlined, EyeTwoTone, InfoCircleTwoTone } from '@ant-design/icons';
 import { api } from '@renderer/api';
-import { JsonView } from 'react-json-view-lite';
-import type { ServerState } from '../../../types';
-import { EmptyServerState } from '../../../consts';
-import { TimingSystemTabs } from './TimingSystemsTabs';
 import { Col, Flex, Input, Row, Select, Switch } from 'antd';
-import { EyeTwoTone, InfoCircleTwoTone, CheckCircleTwoTone, DoubleRightOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import React from 'react';
+import { JsonView } from 'react-json-view-lite';
+import styled from 'styled-components';
+import { EmptyServerState } from '../../../consts';
+import type { ServerState } from '../../../types';
+import ExternalLink from './ExternalLink';
+import RacemapIcon from './RacemapIcon';
+import { TimingSystemTabs } from './TimingSystemsTabs';
 
 import 'react-json-view-lite/dist/index.css';
 import { TimeZoneIndicator } from './TimeZoneIndicator';

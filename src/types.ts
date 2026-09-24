@@ -1,9 +1,9 @@
 import type net from 'node:net';
-import type MyLapsForwarder from './main/mylaps/forwarder';
 import type ChronoTrackForwarder from './main/chronoTrack/forwarder';
-import type { ServiceVersion } from './version';
 import type { ChronoTrackDevice, ChronoTrackForwarderState } from './main/chronoTrack/types';
+import type MyLapsForwarder from './main/mylaps/forwarder';
 import type { MyLapsDevice, MyLapsForwarderState, MyLapsLocation } from './main/mylaps/types';
+import type { ServiceVersion } from './version';
 
 export type UserFeedbackSystemInfo = {
   url: string;

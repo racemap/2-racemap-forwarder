@@ -1,6 +1,6 @@
+import type { API } from 'src/preload';
 import styled from 'styled-components';
 import RacemapBaseSection from './RacemapBaseSection';
-import type { API } from 'src/preload';
 
 // define api for window object
 declare global {

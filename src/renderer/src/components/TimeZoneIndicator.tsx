@@ -1,7 +1,7 @@
 import { api } from '@renderer/api';
 import { Button } from 'antd';
 import { useEffect, useState } from 'react';
-import { ServerState } from 'src/types';
+import type { ServerState } from 'src/types';
 
 type Props = {
   appState: ServerState;
@@ -23,7 +23,7 @@ export const TimeZoneIndicator = ({ appState }: Props) => {
   // i want to have a time having the same offset as the user's timezone
   const toUTCHoursOffset = -currentTime.getTimezoneOffset() / 60;
   const userUtcTime = new Date(currentTime.getTime() - (appState.timeZoneOffsetInHours - toUTCHoursOffset) * 3600000);
-  const userTimeZoneOffsetDiff = toUTCHoursOffset != appState.timeZoneOffsetInHours;
+  const userTimeZoneOffsetDiff = toUTCHoursOffset !== appState.timeZoneOffsetInHours;
 
   return (
     <div

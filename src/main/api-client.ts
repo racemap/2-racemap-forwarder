@@ -1,7 +1,7 @@
+import withQuery from 'with-query';
+import type { RacemapEvent, RacemapStarter, RacemapUser, StoredTimingRead, TimingRead, UserFeedback, UserFeedbackPrototype } from '../types';
 import { envs } from './envs';
 import { error } from './functions';
-import type { StoredTimingRead, TimingRead, RacemapEvent, RacemapUser, RacemapStarter, UserFeedbackPrototype, UserFeedback } from '../types';
-import withQuery from 'with-query';
 
 class APIClient {
   _host = '';
@@ -32,14 +32,14 @@ class APIClient {
     return res;
   }
 
-  async _getJSON(path: string, headers?: HeadersInit): Promise<any> {
+  async _getJSON<T>(path: string, headers?: HeadersInit): Promise<T> {
     const res = await this._fetch(path, {
       headers: { ...headers, Accept: 'application/json' },
     });
     return res.json();
   }
 
-  async _postJSON(path: string, data: Record<string, any> = {}): Promise<Response> {
+  async _postJSON(path: string, data: unknown = {}): Promise<Response> {
     return await this._fetch(path, {
       method: 'POST',
       headers: {
@@ -50,7 +50,7 @@ class APIClient {
     });
   }
 
-  async _postJSONReceiveJSON(path: string, data: Record<string, any> = {}): Promise<any> {
+  async _postJSONReceiveJSON<T>(path: string, data: unknown = {}): Promise<T> {
     const res = await this._fetch(path, {
       method: 'POST',
       headers: {
@@ -66,13 +66,13 @@ class APIClient {
     try {
       await this._getJSON('/api/inspect');
       return true;
-    } catch (err) {
+    } catch (_err) {
       return false;
     }
   }
 
   async getDetailsAboutMe(): Promise<RacemapUser> {
-    const miniUser = await this._getJSON('/api/inspect');
+    const miniUser = await this._getJSON<{ userId: string }>('/api/inspect');
     return await this._getJSON(`/api/users/${miniUser.userId}`);
   }
 

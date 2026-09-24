@@ -1,11 +1,11 @@
 import fs from 'node:fs';
-import pick from 'lodash/pick';
 import path from 'node:path';
-import APIClient from './api-client';
-import { error, info, log, success } from './functions';
 import { app, shell } from 'electron';
+import pick from 'lodash/pick';
 import { EmptyServerState } from '../consts';
 import type { ServerState, UserFeedback, UserFeedbackPrototype } from '../types';
+import APIClient from './api-client';
+import { error, info, log, success } from './functions';
 
 const isElectron = !!process.versions?.electron;
 
