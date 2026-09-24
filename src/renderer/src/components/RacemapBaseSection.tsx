@@ -51,17 +51,16 @@ const RacemapBaseSection = (): React.ReactNode => {
       setAppState(serverState);
     };
 
-    const newStdOutLineHandler = (newLine: string) => {
-      setStdout((prev) => [newLine, ...prev].slice(0, 500));
+    const newStdOutLinesHandler = (lines: Array<string>) => {
+      setStdout((prev) => [...lines.reverse(), ...prev].slice(0, 500));
     };
 
-    // Listen to server state changes
-    window.api.onServerStateChange(stateChangeHandler);
-    window.api.onNewStdOutLine(newStdOutLineHandler);
+    const unsubscribeState = window.api.onServerStateChange(stateChangeHandler);
+    const unsubscribeLines = window.api.onNewStdOutLines(newStdOutLinesHandler);
 
     return () => {
-      window.api.removeServerStateChangeListener(stateChangeHandler);
-      window.api.removeOnNewStdOutLineListener(newStdOutLineHandler);
+      unsubscribeState();
+      unsubscribeLines();
     };
   }, []);
 

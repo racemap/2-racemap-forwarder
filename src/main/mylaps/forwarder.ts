@@ -1,9 +1,9 @@
-import fs from 'node:fs';
 import net from 'node:net';
 import shortId from 'shortid';
 import type { LocationUpdate, MessageParts, TimingRead } from '../../types';
-import BaseForwarder from '../base-forwarder';
+import BaseForwarder, { CLOSED_CONNECTION_TTL_MS } from '../base-forwarder';
 import { error, info, log, processStoredData, removeCertainBytesFromBuffer, storeIncomingRawData, success, warn } from '../functions';
+import { createLogFile } from '../log-file';
 import type { Outbox } from '../outbox';
 import { serverState, updateServerState } from '../state';
 import {
@@ -18,8 +18,9 @@ import {
 import { myLapsDeviceToObject, myLapsLagacyPassingToRead, myLapsMarkerToRead, myLapsPassingToRead } from './functions';
 import type { MyLapsDevice, MyLapsExtendedSocket, MyLapsForwarderState, MyLapsLocation } from './types';
 
+const rawLog = createLogFile('MyLapsInputAdapter');
 const logToFileSystem = (message: Buffer | string, fromClient = true) => {
-  fs.appendFileSync('./MyLapsInputAdapter.log', `${new Date().toISOString()} ${fromClient ? '» from' : '« to  '} client: ${message}\n`);
+  rawLog(`${new Date().toISOString()} ${fromClient ? '» from' : '« to  '} client: ${message}`);
 };
 
 const clearIntervalTimer = (timerHandle: NodeJS.Timeout | null) => {
@@ -94,6 +95,13 @@ class MyLapsForwarder extends BaseForwarder<MyLapsExtendedSocket> {
       socket.identified = false;
       socket.userId = '';
       socket.cache.buffer = Buffer.alloc(0);
+      // Keep closed connections visible for a while, then drop them so the list and the state stay small.
+      setTimeout(() => {
+        if (this._connections.get(socketId)?.closedAt != null) {
+          this._connections.delete(socketId);
+          this.updateElectronState();
+        }
+      }, CLOSED_CONNECTION_TTL_MS).unref();
     }
   };
 
