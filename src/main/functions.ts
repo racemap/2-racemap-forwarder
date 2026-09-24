@@ -198,6 +198,16 @@ export function parseTimeToIsoStringWithUserDefinedOffset(dateAndTime: string, f
   return moment.utc(dateAndTime, format).subtract(timeZoneOffsetInHours, 'hour').toDate();
 }
 
+// For formats with a time but no date. The date is the one that puts the read closest to `now`, seen in
+// the user's offset, so a read from 23:59 that arrives at 00:01 stays on the previous day.
+export function parseTimeOfDayWithUserDefinedOffset(time: string, format: string, timeZoneOffsetInHours: number, now = new Date()): Date {
+  const localNow = moment.utc(now).add(timeZoneOffsetInHours, 'hour');
+  const sameDay = moment.utc(`${localNow.format('YYYY-MM-DD')} ${time}`, `YYYY-MM-DD ${format}`);
+  const candidates = [sameDay.clone().subtract(1, 'day'), sameDay, sameDay.clone().add(1, 'day')];
+  const closest = candidates.reduce((best, c) => (Math.abs(c.diff(localNow)) < Math.abs(best.diff(localNow)) ? c : best));
+  return closest.subtract(timeZoneOffsetInHours, 'hour').toDate();
+}
+
 export const clearIntervalTimer = (timerHandle: NodeJS.Timeout | null) => {
   if (timerHandle != null) {
     clearInterval(timerHandle);

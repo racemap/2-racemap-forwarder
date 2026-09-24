@@ -1,21 +1,10 @@
 import net from 'node:net';
 import _pick from 'lodash/pick';
-import moment from 'moment';
 import shortId from 'shortid';
 import type { TimingRead } from '../../types';
-import type APIClient from '../api-client';
 import BaseForwarder from '../base-forwarder';
-import {
-  clearIntervalTimer,
-  error,
-  info,
-  log,
-  parseTimeToIsoStringWithUserDefinedOffset,
-  processStoredData,
-  storeIncomingRawData,
-  success,
-  warn,
-} from '../functions';
+import { clearIntervalTimer, error, info, log, processStoredData, storeIncomingRawData, warn } from '../functions';
+import type { Outbox } from '../outbox';
 import { serverState, updateServerState } from '../state';
 import {
   ChronoTrack2RMServiceName,
@@ -27,7 +16,7 @@ import {
   MAX_MESSAGE_DATA_DELAY_IN_MS,
   SUPPORTED_PROTOCOL,
 } from './consts';
-import { logToFileSystem, prefix } from './functions';
+import { chronoTrackTimeToDate, logToFileSystem, prefix } from './functions';
 import {
   type ChronoTrackDevice,
   type ChronoTrackExtendedSocket,
@@ -39,8 +28,8 @@ import {
 class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
   _server: net.Server;
 
-  constructor(apiClient: APIClient, listenPort: number, justLocalHost = true) {
-    super(apiClient, listenPort, justLocalHost);
+  constructor(outbox: Outbox, listenPort: number, justLocalHost = true) {
+    super(outbox, listenPort, justLocalHost);
 
     this._server = this._configureReceiverSocket(this._listenPort, this._listenHost);
 
@@ -290,7 +279,7 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
       const timingRead: TimingRead = {
         chipId, // the transponder registered by the antenna
         timingId: someParts[6], // MAC Address of the reader (often each antenna has a own MAC address)
-        timestamp: this._parseTime(refToSocket, someParts[4]).toISOString(),
+        timestamp: chronoTrackTimeToDate(someParts[4], ChronoTrackFeatures['time-format'], serverState.timeZoneOffsetInHours).toISOString(),
         // receivedAt: Date.now(), // when we received this information in our backend
         lat: null,
         lng: null,
@@ -298,7 +287,7 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
         timingName: someParts[2],
       };
 
-      this._pushNonlocatedReadToRacemap(timingRead);
+      this._outbox.add([timingRead]);
       refToSocket.forwardedReads += 1;
       this._forwardedReads += 1;
     };
@@ -351,41 +340,8 @@ class ChronoTrackForwarder extends BaseForwarder<ChronoTrackExtendedSocket> {
     }
   };
 
-  _parseTime(_refToSocket: ChronoTrackExtendedSocket, timeString: string): Date {
-    let timestamp = new Date(0);
-    switch (ChronoTrackFeatures['time-format']) {
-      case 'normal': {
-        // we have no date just 14:02:15.31
-        // this is just local time so we need to add the timezone offset to get UTC time
-        // timestamp = moment.utc(timeString, 'HH:mm:ss.SS').subtract(serverState.timeZoneOffsetInHours, 'hours').toDate();
-        timestamp = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'HH:mm:ss.SS', serverState.timeZoneOffsetInHours);
-        break;
-      }
-      case 'iso': {
-        // we have: 2008-10-16T14:02:15.31 => expected to be UTC
-        // timestamp = moment.utc(timeString, 'YYYY-MM-DDTHH:mm:ss.SS').toDate();
-        timestamp = parseTimeToIsoStringWithUserDefinedOffset(timeString, 'YYYY-MM-DDTHH:mm:ss.SS', serverState.timeZoneOffsetInHours);
-        break;
-      }
-      case 'unix': {
-        timestamp = moment.unix(Number.parseFloat(timeString)).toDate();
-      }
-    }
-    return timestamp;
-  }
-
   _triggerStartTransmission(socket: ChronoTrackExtendedSocket, locationName: string): void {
     socket.sendFrame(`${ChronoTrackCommands.start}~${locationName}`);
-  }
-
-  async _pushNonlocatedReadToRacemap(TimingRead: TimingRead): Promise<void> {
-    // log("tryToPushNonlocatedReadToRacemap", TimingRead);
-    const response = await this._apiClient.sendTimingReadsAsJSON([TimingRead]);
-    if (response.status === 200) {
-      success('tryToPushNonlocatedReadToRacemap', TimingRead);
-    } else {
-      warn('tryToPushNonlocatedReadToRacemap', response.status);
-    }
   }
 }
 

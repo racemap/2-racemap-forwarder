@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { serial as test } from 'ava';
 import moment from 'moment';
 import { OneHourInMillis, OneSecondInMillis } from '../src/consts';
@@ -15,16 +18,18 @@ import {
   sleep,
   storeIncomingRawData,
 } from '../src/main/functions';
-import { MyLapsDataSeparator, MyLapsDefaultPrefix, MyLapsFrameTerminator, MyLapsFunctions, MyLapsIdentifiers } from '../src/main/mylaps/consts';
+import { MyLapsDataSeparator, MyLapsFrameTerminator, MyLapsFunctions, MyLapsIdentifiers } from '../src/main/mylaps/consts';
 import MyLapsForwarder from '../src/main/mylaps/forwarder';
-import { myLapsLagacyPassingToRead, myLapsPassingToRead } from '../src/main/mylaps/functions';
+import { Outbox } from '../src/main/outbox';
 import type { TPredictionTestTimes, TTestFixtures, TTestState } from '../src/types';
 
 const apiClient = new APIClient({ authorization: `Bearer ${envs.RACEMAP_API_TOKEN}` });
+const outbox = new Outbox({
+  file: path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'forwarder-test-')), 'outbox.jsonl'),
+  send: (reads) => apiClient.sendTimingReadsAsJSON(reads),
+});
+outbox.start(100);
 const forwarderIPAddress = envs.LISTEN_MODE === 'private' ? '127.0.0.1' : '0.0.0.0';
-
-const _hasMyLapsForwarderInstance = !isPortInUse(envs.MYLAPS_LISTEN_PORT);
-const hasChronoTrckForwarderInstance = !isPortInUse(envs.CHRONO_LISTEN_PORT);
 
 const shortId001 = shortIdBuilder();
 const times: TPredictionTestTimes = {
@@ -199,52 +204,12 @@ test('Test parseTimeToIsoStringWithUserDefinedOffset function with different off
   t.is(parsedWithMinus2HourOffset, resultWithMinus2HoursOffset, `timestamp should be ${resultWithMinus2HoursOffset} with offset -2 hours`);
 });
 
-test('Test function myLapsLagacyPassingToRead', (t) => {
-  // const legacyPassingString = 'KV8658316:13:57.417 3 0F  1000025030870'
-  const toUTCHoursOffset = new Date().getTimezoneOffset() / -60;
-  const result = moment.utc('2025-03-08T16:13:57.417Z').subtract(toUTCHoursOffset, 'hour').toISOString();
-
-  const read = myLapsLagacyPassingToRead('Start', fixtures.myLaps.legacyPassingString);
-
-  t.not(read, null, 'read should not be null');
-  t.is(read?.chipId, `${MyLapsDefaultPrefix}KV86583`, 'chipId should be KV86583');
-  t.is(read?.timingId, 'Start', 'timingId should be Start');
-  t.is(read?.timingName, 'Start', 'timingName should be Start');
-  t.is(read?.timestamp, result, `timestamp should be ${result}`);
-});
-
-test('Test function myLapsPassingPassiveToRead', (t) => {
-  // passingString = 't=13:11:30.904|c=0000041|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41',
-  const toUTCHoursOffset = new Date().getTimezoneOffset() / -60;
-  const result = moment.utc('2012-06-06T13:11:30.904Z').subtract(toUTCHoursOffset, 'hour').toISOString();
-
-  const read = myLapsPassingToRead('Start001', 'Start', fixtures.myLaps.passingStringPassive);
-  t.not(read, null, 'read should not be null');
-  t.is(read?.chipId, `${MyLapsDefaultPrefix}41`, 'chipId should be 41');
-  t.is(read?.timingId, 'Start001', 'timingId should be Start001');
-  t.is(read?.timingName, 'Start', 'timingName should be Start');
-  t.is(read?.timestamp, result, `timestamp should be ${result}`);
-});
-
-test('Test function myLapsPassingActiveToRead', (t) => {
-  // passingString = 't=13:11:30.904|c=0000041|ct=UH|d=120606|l=13|dv=4|re=0|an=00001111|g=0|b=41|n=41',
-  const toUTCHoursOffset = new Date().getTimezoneOffset() / -60;
-  const result = moment.utc('2012-06-06T13:11:30.904Z').subtract(toUTCHoursOffset, 'hour').toISOString();
-
-  const read = myLapsPassingToRead('Start001', 'Start', fixtures.myLaps.passingStringActive);
-  t.not(read, null, 'read should not be null');
-  t.is(read?.chipId, `${MyLapsDefaultPrefix}FG29511`, 'chipId should be FG29511');
-  t.is(read?.timingId, 'Start001', 'timingId should be Start001');
-  t.is(read?.timingName, 'Start', 'timingName should be Start');
-  t.is(read?.timestamp, result, `timestamp should be ${result}`);
-});
-
 test('Try to spin up an instance of the mylaps forwarder', async (t) => {
   if (await isPortInUse(envs.MYLAPS_LISTEN_PORT)) {
     t.log(`Port ${envs.MYLAPS_LISTEN_PORT} is already in use. We do not have to spin a server.`);
     t.pass();
   } else {
-    state.myLaps.forwarder = new MyLapsForwarder(apiClient, envs.MYLAPS_LISTEN_PORT);
+    state.myLaps.forwarder = new MyLapsForwarder(outbox, envs.MYLAPS_LISTEN_PORT);
     t.not(state.myLaps.forwarder, null, 'instance of MyLapsForwarder is not null');
   }
 });
@@ -463,7 +428,7 @@ test('Try to spin up an instance of the chronotrack forwarder', async (t) => {
     t.log(`Port ${envs.CHRONO_LISTEN_PORT} is already in use. We do not have to spin a server.`);
     t.pass();
   } else {
-    state.chronoTrack.forwarder = new ChronoTrackForwarder(apiClient, envs.CHRONO_LISTEN_PORT);
+    state.chronoTrack.forwarder = new ChronoTrackForwarder(outbox, envs.CHRONO_LISTEN_PORT);
     t.not(state.chronoTrack.forwarder, null, 'instance of ChronoTrackForwarder is not null');
   }
 });
@@ -580,36 +545,34 @@ test('should be possible to find the correct client config messages in the serve
   t.true(state.chronoTrack.fromServiceMessages.includes('time-format=iso'), 'time-format=iso should be in the server welcome messages');
 });
 
-hasChronoTrckForwarderInstance &&
-  test('it should be possible to get a list of connected chronotrack clients', async (t) => {
-    t.true(state.chronoTrack.forwarder != null, 'forwarder should be initialized but is not');
-    if (state.chronoTrack.forwarder != null) {
-      t.true(Array.isArray(state.chronoTrack.forwarder?.getConnectedChronoTrackDevices()), 'connectedClients should be an array');
+test('it should be possible to get a list of connected chronotrack clients', async (t) => {
+  t.true(state.chronoTrack.forwarder != null, 'forwarder should be initialized but is not');
+  if (state.chronoTrack.forwarder != null) {
+    t.true(Array.isArray(state.chronoTrack.forwarder?.getConnectedChronoTrackDevices()), 'connectedClients should be an array');
 
-      t.true(state.chronoTrack.forwarder.getConnectedChronoTrackDevices().length > 0, 'connectedClients should have more than 0 entries');
-      state.chronoTrack.connectedClients = state.chronoTrack.forwarder.getConnectedChronoTrackDevices();
-    }
-  });
+    t.true(state.chronoTrack.forwarder.getConnectedChronoTrackDevices().length > 0, 'connectedClients should have more than 0 entries');
+    state.chronoTrack.connectedClients = state.chronoTrack.forwarder.getConnectedChronoTrackDevices();
+  }
+});
 
-hasChronoTrckForwarderInstance &&
-  test('it should be possible to find our RacemapTestClient among all connected Clients', async (t) => {
-    t.true(state.chronoTrack.connectedClients.length > 0, 'connectedClients should have more than 0 entries');
-    const client = state.chronoTrack.connectedClients.find((c) => c.meta.name === 'RacemapTestClient');
-    t.not(client, null, 'should have RacemapTestClient but found no connected client.');
-    if (client != null) {
-      t.not(client.meta, null, 'client.meta should not be null');
-      t.is(client.meta.name, 'RacemapTestClient', 'client.meta.name should be RacemapTestClient');
-      t.not(client.meta.event, null, 'client.meta.event should not be null');
-      t.is(client.meta?.event?.name, fixtures.chronoTrack.event.name, 'client.meta.event.name should be fixtures.event.name');
-      t.is(
-        client.meta?.event?.description,
-        fixtures.chronoTrack.event.description,
-        'client.meta.event.description should be fixtures.event.description',
-      );
-      t.true(Array.isArray(client.meta.locations), 'client.meta.locations should be an array');
-      t.is(client.meta.locations.length, 8, 'client.meta.locations should have 8 entries');
-    }
-  });
+test('it should be possible to find our RacemapTestClient among all connected Clients', async (t) => {
+  t.true(state.chronoTrack.connectedClients.length > 0, 'connectedClients should have more than 0 entries');
+  const client = state.chronoTrack.connectedClients.find((c) => c.meta.name === 'RacemapTestClient');
+  t.not(client, null, 'should have RacemapTestClient but found no connected client.');
+  if (client != null) {
+    t.not(client.meta, null, 'client.meta should not be null');
+    t.is(client.meta.name, 'RacemapTestClient', 'client.meta.name should be RacemapTestClient');
+    t.not(client.meta.event, null, 'client.meta.event should not be null');
+    t.is(client.meta?.event?.name, fixtures.chronoTrack.event.name, 'client.meta.event.name should be fixtures.event.name');
+    t.is(
+      client.meta?.event?.description,
+      fixtures.chronoTrack.event.description,
+      'client.meta.event.description should be fixtures.event.description',
+    );
+    t.true(Array.isArray(client.meta.locations), 'client.meta.locations should be an array');
+    t.is(client.meta.locations.length, 8, 'client.meta.locations should have 8 entries');
+  }
+});
 
 test('should send a new location through the socket', async (t) => {
   t.not(state.chronoTrack.aTCPClient, null, 'tcp client should be initialized but is not');
@@ -631,36 +594,34 @@ test('should send a new location through the socket', async (t) => {
   }
 });
 
-hasChronoTrckForwarderInstance &&
-  test('it should be possible to get an updated list of connected chronotrack clients', async (t) => {
-    t.not(state.chronoTrack.forwarder, null, 'forwarder should be initialized but is not');
-    if (state.chronoTrack.forwarder != null) {
-      t.true(Array.isArray(state.chronoTrack.forwarder?.getConnectedChronoTrackDevices()), 'connectedClients should be an array');
-      t.true(state.chronoTrack.forwarder.getConnectedChronoTrackDevices().length > 0, 'connectedClients should have more than 0 entries');
-      state.chronoTrack.connectedClients = state.chronoTrack.forwarder.getConnectedChronoTrackDevices();
-    }
-  });
+test('it should be possible to get an updated list of connected chronotrack clients', async (t) => {
+  t.not(state.chronoTrack.forwarder, null, 'forwarder should be initialized but is not');
+  if (state.chronoTrack.forwarder != null) {
+    t.true(Array.isArray(state.chronoTrack.forwarder?.getConnectedChronoTrackDevices()), 'connectedClients should be an array');
+    t.true(state.chronoTrack.forwarder.getConnectedChronoTrackDevices().length > 0, 'connectedClients should have more than 0 entries');
+    state.chronoTrack.connectedClients = state.chronoTrack.forwarder.getConnectedChronoTrackDevices();
+  }
+});
 
-hasChronoTrckForwarderInstance &&
-  test('it should be possible to find our new location in the connected RacemapTestClient metadata', async (t) => {
-    t.true(state.chronoTrack.connectedClients.length > 0, 'connectedClients should have more than 0 entries');
-    const client = state.chronoTrack.connectedClients.find((c) => c.meta.name === 'RacemapTestClient');
-    t.not(client, null, 'should have RacemapTestClient but found no connected client.');
-    if (client != null) {
-      t.not(client.meta, null, 'client.meta should not be null');
-      t.is(client.meta.name, 'RacemapTestClient', 'client.meta.name should be RacemapTestClient');
-      t.not(client.meta.event, null, 'client.meta.event should not be null');
-      t.is(client.meta?.event?.name, fixtures.chronoTrack.event.name, 'client.meta.event.name should be fixtures.event.name');
-      t.is(
-        client.meta?.event?.description,
-        fixtures.chronoTrack.event.description,
-        'client.meta.event.description should be fixtures.event.description',
-      );
-      t.true(Array.isArray(client.meta.locations), 'client.meta.locations should be an array');
-      t.is(client.meta.locations.length, 9, 'client.meta.locations should have 9 entries');
-      t.true(client.meta.locations.includes(fixtures.chronoTrack.newLocationName), 'client.meta.locations should include fixtures.newLocationName');
-    }
-  });
+test('it should be possible to find our new location in the connected RacemapTestClient metadata', async (t) => {
+  t.true(state.chronoTrack.connectedClients.length > 0, 'connectedClients should have more than 0 entries');
+  const client = state.chronoTrack.connectedClients.find((c) => c.meta.name === 'RacemapTestClient');
+  t.not(client, null, 'should have RacemapTestClient but found no connected client.');
+  if (client != null) {
+    t.not(client.meta, null, 'client.meta should not be null');
+    t.is(client.meta.name, 'RacemapTestClient', 'client.meta.name should be RacemapTestClient');
+    t.not(client.meta.event, null, 'client.meta.event should not be null');
+    t.is(client.meta?.event?.name, fixtures.chronoTrack.event.name, 'client.meta.event.name should be fixtures.event.name');
+    t.is(
+      client.meta?.event?.description,
+      fixtures.chronoTrack.event.description,
+      'client.meta.event.description should be fixtures.event.description',
+    );
+    t.true(Array.isArray(client.meta.locations), 'client.meta.locations should be an array');
+    t.is(client.meta.locations.length, 9, 'client.meta.locations should have 9 entries');
+    t.true(client.meta.locations.includes(fixtures.chronoTrack.newLocationName), 'client.meta.locations should include fixtures.newLocationName');
+  }
+});
 
 test('it should be possible to find 2 start transmission frames received from the server. 1 unspecific and one specific for the newLocation', async (t) => {
   t.true(state.chronoTrack.fromServiceMessages.includes(ChronoTrackCommands.start), 'should have received a start transmission frame');
