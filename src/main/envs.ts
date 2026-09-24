@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-import { ToRacemapForwarderVersion } from '../version';
+import { buildInfo } from '../version';
 import { printEnvVar } from './functions';
 
 dotenv.config();
@@ -12,7 +12,7 @@ const MYLAPS_LISTEN_PORT = Number.parseInt(process.env.MYLAPS_LISTEN_PORT ?? '30
 const MYLAPS_PREFIX_OVERRIDE = process.env.MYLAPS_PREFIX_OVERRIDE ?? '';
 const CHRONO_LISTEN_PORT = Number.parseInt(process.env.CHRONO_LISTEN_PORT ?? '3000', 10);
 const CHRONO_PREFIX_OVERRIDE = process.env.CHRONO_PREFIX_OVERRIDE ?? '';
-const VERSION = ToRacemapForwarderVersion.gitTag.split('_')[0];
+const VERSION = buildInfo.version;
 
 printEnvVar({ RACEMAP_API_HOST });
 printEnvVar({ RACEMAP_API_TOKEN });

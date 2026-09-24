@@ -2,9 +2,8 @@ import { api } from '@renderer/api';
 import { Flex, FloatButton, Input, Modal, message } from 'antd';
 import classNames from 'classnames';
 import { type CSSProperties, type FC, Suspense, useState } from 'react';
-import type { RacemapUser, UserFeedbackPrototype } from 'src/types';
+import type { AppVersion, RacemapUser, UserFeedbackPrototype } from 'src/types';
 import styled from 'styled-components';
-import { UAParser } from 'ua-parser-js';
 import { RacemapColors } from '../../../consts';
 import { isNotEmptyString } from '../../../functions';
 import { IconCommentDots, IconExclamationTriangle } from '../components/Icon';
@@ -12,13 +11,10 @@ import { ErrorBoundary } from './ErrorBoundary';
 
 const { TextArea } = Input;
 
-export const UserFeedback = ({ user }: { user: RacemapUser | null }) => {
+export const UserFeedback = ({ user, version }: { user: RacemapUser | null; version: AppVersion }) => {
   const [visible, setVisible] = useState(false);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // const currentUser = useCurrentUser();
-  const userAgent = new UAParser().getResult();
 
   // Don't show feedback button if the user is not logged in
   if (user === null) return null;
@@ -34,13 +30,14 @@ export const UserFeedback = ({ user }: { user: RacemapUser | null }) => {
       const feedback: UserFeedbackPrototype = {
         content,
         source: '2-racemap-forwarder',
+        // The support AI reads url, browser, os and device, so the build goes there.
         systemInfo: {
-          browser: `${userAgent.browser.name} ${userAgent.browser.version}`,
-          os: `${userAgent.os.name} ${userAgent.os.version}`,
-          engine: `${userAgent.engine.name} ${userAgent.engine.version}`,
-          device: userAgent.device.type || 'desktop', // can be 'mobile', 'tablet', etc.
-          userAgent: navigator.userAgent,
-          url: window.location.href,
+          url: `https://github.com/racemap/2-racemap-forwarder/releases/tag/v${version.version}`,
+          browser: `2-racemap-forwarder ${version.version} (${version.commit})`,
+          os: `${version.os} ${version.arch}`,
+          engine: `Electron ${version.electron}`,
+          device: 'desktop',
+          userAgent: version.label,
           timestamp: new Date(),
         },
       };

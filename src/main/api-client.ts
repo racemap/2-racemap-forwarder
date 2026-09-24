@@ -1,5 +1,6 @@
 import withQuery from 'with-query';
 import type { RacemapEvent, RacemapStarter, RacemapUser, StoredTimingRead, TimingRead, UserFeedback, UserFeedbackPrototype } from '../types';
+import { userAgent } from './build';
 import { envs } from './envs';
 import { error } from './functions';
 
@@ -9,7 +10,7 @@ class APIClient {
 
   constructor(headers: HeadersInit = {}) {
     this._host = envs.RACEMAP_API_HOST;
-    this._headers = headers;
+    this._headers = { 'User-Agent': userAgent, ...headers };
   }
 
   setApiToken(token: string | null): void {

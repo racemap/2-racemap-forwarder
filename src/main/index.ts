@@ -5,6 +5,7 @@ import linuxIcon from '../../resources/icons/128x128.png?asset';
 import macIcon from '../../resources/icons/icon.icns?asset';
 import winIcon from '../../resources/icons/icon.ico?asset';
 import type { UserFeedbackPrototype } from '../types';
+import { appVersion } from './build';
 import ChronoTrackForwarder from './chronoTrack/forwarder';
 import { envs } from './envs';
 import { info, log, prepareLogger } from './functions';
@@ -22,7 +23,7 @@ import {
 } from './state';
 
 async function bootup(mainWindow: BrowserWindow) {
-  log('Hello from 2-racemap-forwarder');
+  log(`Hello from ${appVersion.label} on ${appVersion.os}`);
 
   info('Check LISTEN_MODE');
   if (!['private', 'public'].includes(envs.LISTEN_MODE)) {

@@ -1,6 +1,6 @@
 import { CheckCircleTwoTone, DoubleRightOutlined, EyeInvisibleOutlined, EyeTwoTone, InfoCircleTwoTone } from '@ant-design/icons';
 import { api } from '@renderer/api';
-import { Col, Flex, Input, Row, Select, Switch } from 'antd';
+import { Col, Flex, Input, Row, Select, Switch, Typography } from 'antd';
 import React from 'react';
 import { JsonView } from 'react-json-view-lite';
 import styled from 'styled-components';
@@ -73,7 +73,13 @@ const RacemapBaseSection = (): React.ReactNode => {
         </ExternalLink>
 
         <h1>2 RACEMAP Forwarder</h1>
-        <span>{appState.version?.gitTag.split('_')[0]}</span>
+        <Typography.Text
+          code
+          copyable={{ text: appState.version.label, tooltips: ['Copy version for support', 'Copied'] }}
+          title={appState.version.label}
+        >
+          v{appState.version.version} ({appState.version.commit})
+        </Typography.Text>
         <Switch size="small" title="Toggle expert mode" checked={appState.expertMode} onChange={onExpertChange} />
       </Flex>
       <TimeZoneIndicator appState={appState} />
@@ -167,7 +173,7 @@ const RacemapBaseSection = (): React.ReactNode => {
         )}
       </Row>
       <TimingSystemTabs appState={appState} logLines={stdout} />
-      <UserFeedback user={appState.user} />
+      <UserFeedback user={appState.user} version={appState.version} />
     </>
   );
 };
