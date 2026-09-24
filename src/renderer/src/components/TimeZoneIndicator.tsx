@@ -110,8 +110,7 @@ const UserDefinedOffsetSelector = ({
           title="Decrease user defined timezone offset by 1hour. Be careful, this can lead to wrong times if set wrong!"
           variant="solid"
           size="small"
-          color="blue"
-          // color={RacemapColors.PaleBlue}
+          color="primary"
           onClick={() => onUserTimezoneOffsetChange(timeZoneOffsetInHours - 1)}
         >
           -1h
@@ -133,8 +132,7 @@ const UserDefinedOffsetSelector = ({
         <Button
           variant="solid"
           size="small"
-          color="blue"
-          // color={RacemapColors.PaleBlue}
+          color="primary"
           title="Increase user defined timezone offset by 1hour. Be careful, this can lead to wrong times if set wrong!"
           onClick={() => onUserTimezoneOffsetChange(timeZoneOffsetInHours + 1)}
         >
